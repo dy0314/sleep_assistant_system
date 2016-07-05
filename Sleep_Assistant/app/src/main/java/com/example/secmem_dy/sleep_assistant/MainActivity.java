@@ -14,6 +14,11 @@ import android.widget.TimePicker;
 import android.widget.DatePicker.OnDateChangedListener;
 import android.widget.TimePicker.OnTimeChangedListener;
 import android.widget.Toast;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+
+import cz.msebera.android.httpclient.Header;
 
 public class MainActivity extends Activity implements OnDateChangedListener, OnTimeChangedListener {
 
@@ -31,9 +36,10 @@ public class MainActivity extends Activity implements OnDateChangedListener, OnT
      * 통지 관련 맴버 변수
      */
     private NotificationManager mNotification;
-
+    private AsyncHttpClient client;
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        client =HttpClient.getinstance();
         //알람 매니저를 취득
         mManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         //현재 시각을 취득
@@ -67,6 +73,21 @@ public class MainActivity extends Activity implements OnDateChangedListener, OnT
 
     //알람의 설정
     private void setAlarm() {
+
+        RequestParams params = new RequestParams();
+        params.put("id","test");
+        params.put("pwd","testpwd");
+        HttpClient.get("", params, new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                Log.i("Node","success");
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                Log.i("Node","fail");
+            }
+        } );
+
         Intent intent=new Intent(MainActivity.this,AlarmReceiver.class);
         sender=PendingIntent.getBroadcast(this,0,intent,0);
         //  Calendar calendar  =Calendar.getInstance();
