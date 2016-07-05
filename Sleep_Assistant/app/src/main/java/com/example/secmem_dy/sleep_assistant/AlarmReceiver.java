@@ -16,7 +16,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     private static SoundPlay mplay = null;
     @Override
     public void onReceive(Context context, Intent intent) {
-        Toast.makeText(context,"Receiver",Toast.LENGTH_LONG).show();
+        //Toast.makeText(context,"Receiver",Toast.LENGTH_SHORT).show();
         try {
             if(mplay == null) {
                 mplay = new SoundPlay(context, R.raw.alarm);

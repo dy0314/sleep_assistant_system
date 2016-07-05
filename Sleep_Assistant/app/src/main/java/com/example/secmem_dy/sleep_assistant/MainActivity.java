@@ -60,44 +60,41 @@ public class MainActivity extends Activity implements OnDateChangedListener, OnT
         mDate.init (mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH), this);
         mTime = (TimePicker)findViewById(R.id.time_picker);
 
-       // mTime.setCurrentHour(mCalendar.get(Calendar.HOUR_OF_DAY));
-       // mTime.setCurrentMinute(mCalendar.get(Calendar.MINUTE));
-       // mTime.setOnTimeChangedListener(this);
-
+        mTime.setCurrentHour(mCalendar.get(Calendar.HOUR_OF_DAY));
+        mTime.setCurrentMinute(mCalendar.get(Calendar.MINUTE));
+        mTime.setOnTimeChangedListener(this);
     }
 
     //알람의 설정
     private void setAlarm() {
         Intent intent=new Intent(MainActivity.this,AlarmReceiver.class);
         sender=PendingIntent.getBroadcast(this,0,intent,0);
-        Calendar calendar  =Calendar.getInstance();
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.add(Calendar.SECOND,5);
-        mManager.set(AlarmManager.RTC,calendar.getTimeInMillis(),sender);
+        //  Calendar calendar  =Calendar.getInstance();
+        //  calendar.setTimeInMillis(System.currentTimeMillis());
+        //  calendar.add(Calendar.SECOND,5);
+        mManager.set(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),sender);
+        mManager.setRepeating(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),1000*2,sender);
 //        mManager.set(AlarmManager.RTC_WAKEUP, mCalendar.getTimeInMillis(), sender);
-        Log.i("HelloAlarmActivity", calendar.getTime().toString());
+        Log.i("HelloAlarmActivity", mCalendar.getTime().toString());
     }
 
     //알람의 해제
     private void resetAlarm() {
-//      mManager.cancel(pendingIntent());
+        /*Intent intentstop = new Intent(this, AlarmReceiver.class);
+        PendingIntent senderstop = PendingIntent.getBroadcast(this,
+                1234567, intentstop, 0);
+        AlarmManager alarmManagerstop = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManagerstop.cancel(senderstop);*/
         mManager.cancel(sender);
     }
-    //알람의 설정 시각에 발생하는 인텐트 작성
-   /* private PendingIntent pendingIntent() {
-        Toast.makeText(getApplicationContext(), "토스트메시지입니다.", Toast.LENGTH_LONG).show();
-        Intent i = new Intent(getApplicationContext(), Pending.class);
-        PendingIntent pi = PendingIntent.getActivity(this, 0, i, 0);
-        return pi;
-    }*/
     //일자 설정 클래스의 상태변화 리스너
     public void onDateChanged (DatePicker view, int year, int monthOfYear, int dayOfMonth) {
         mCalendar.set (year, monthOfYear, dayOfMonth, mTime.getCurrentHour(), mTime.getCurrentMinute());
-       // Log.i("HelloAlarmActivity", mCalendar.getTime().toString());
+        // Log.i("HelloAlarmActivity", mCalendar.getTime().toString());
     }
     //시각 설정 클래스의 상태변화 리스너
     public void onTimeChanged (TimePicker view, int hourOfDay, int minute) {
         mCalendar.set (mDate.getYear(), mDate.getMonth(), mDate.getDayOfMonth(), hourOfDay, minute);
-      //  Log.i("HelloAlarmActivity",mCalendar.getTime().toString());
+        //  Log.i("HelloAlarmActivity",mCalendar.getTime().toString());
     }
 }
