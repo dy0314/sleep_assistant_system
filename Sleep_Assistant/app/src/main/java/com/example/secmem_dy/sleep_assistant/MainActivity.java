@@ -1,5 +1,6 @@
 package com.example.secmem_dy.sleep_assistant;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import android.app.*;
@@ -13,12 +14,16 @@ import android.widget.DatePicker;
 import android.widget.TimePicker;
 import android.widget.DatePicker.OnDateChangedListener;
 import android.widget.TimePicker.OnTimeChangedListener;
-import android.widget.Toast;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.entity.StringEntity;
+import cz.msebera.android.httpclient.message.BasicHeader;
+import cz.msebera.android.httpclient.protocol.HTTP;
 
 public class MainActivity extends Activity implements OnDateChangedListener, OnTimeChangedListener {
 
@@ -73,7 +78,56 @@ public class MainActivity extends Activity implements OnDateChangedListener, OnT
 
     //알람의 설정
     private void setAlarm() {
+        StringEntity entity=null;
+        JSONObject jsonParams = new JSONObject();
+        try {
+            jsonParams.put("TEST","test");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.e("Error","jsonParams");
+        }
+        try {
+            entity = new StringEntity(jsonParams.toString());
+        } catch (UnsupportedEncodingException e) {
+            Log.e("Error","StringEntity");
+            e.printStackTrace();
+        }
+        entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,"application/json"));
+        client.post(getApplicationContext(),HttpClient.SERVER_URL,entity,"application/json",new AsyncHttpResponseHandler() {
 
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                Log.e("From_SERVER","success");
+                String decoded=null;
+                try {
+                     decoded=new String(responseBody,"UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                Log.e("From_SERVER",""+decoded);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                Log.e("From_SERVER","fail");
+            }
+        } );
+
+        /*
+        client.post(getApplicationContext(),HttpClient.SERVER_URL,entity,"application/json",new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+                Log.e("From_SERVER","ok");
+            }
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+                Log.e("From_SERVER","fail");
+            }
+        } );
+
+        /*
         RequestParams params = new RequestParams();
         params.put("id","test");
         params.put("pwd","testpwd");
@@ -87,6 +141,23 @@ public class MainActivity extends Activity implements OnDateChangedListener, OnT
                 Log.i("Node","fail");
             }
         } );
+
+        RequestParams params = new RequestParams();
+        params.put("id","test");
+        params.put("pwd","testpwd");
+        HttpClient.post("", params, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+                Log.e("From_SERVER","ok");
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+                Log.e("From_SERVER","fail");
+            }
+        } );*/
 
         Intent intent=new Intent(MainActivity.this,AlarmReceiver.class);
         sender=PendingIntent.getBroadcast(this,0,intent,0);
