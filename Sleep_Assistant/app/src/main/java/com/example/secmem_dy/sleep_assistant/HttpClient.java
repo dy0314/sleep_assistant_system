@@ -1,8 +1,5 @@
 package com.example.secmem_dy.sleep_assistant;
-
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 
 /**
  * Created by SECMEM-DY on 2016-07-05.
@@ -14,13 +11,7 @@ public class HttpClient {
         return HttpClient.client;
     }
 
-    public static void get(String url, RequestParams params, AsyncHttpResponseHandler reponseHandler) {
-        client.get(getAbsoulteUrl(url), params, reponseHandler);
-    }
-    public static void post(String url, RequestParams params, AsyncHttpResponseHandler reponseHandler) {
-        client.post(getAbsoulteUrl(url), params, reponseHandler);
-    }
-    private static String getAbsoulteUrl(String relativeUrl) {
+    public static String getAbsoulteUrl(String relativeUrl) {
         return SERVER_URL + relativeUrl;
     }
 }

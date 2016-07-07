@@ -1,9 +1,9 @@
 package com.example.secmem_dy.sleep_assistant;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import android.app.*;
+import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,20 +12,26 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
-import android.widget.DatePicker.OnDateChangedListener;
-import android.widget.TimePicker.OnTimeChangedListener;
+
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.entity.StringEntity;
 import cz.msebera.android.httpclient.message.BasicHeader;
 import cz.msebera.android.httpclient.protocol.HTTP;
 
-public class MainActivity extends Activity implements OnDateChangedListener, OnTimeChangedListener {
+/**
+ * Created by SECMEM-DY on 2016-07-07.
+ */
+public class AlarmSettingActivity extends Activity implements DatePicker.OnDateChangedListener, TimePicker.OnTimeChangedListener {
 
     // 알람 메니저
     private AlarmManager mManager;
@@ -51,7 +57,7 @@ public class MainActivity extends Activity implements OnDateChangedListener, OnT
         mCalendar = new GregorianCalendar();
 
         //셋 버튼, 리셋버튼의 리스너를 등록
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.alarm);
         Button set_button = (Button)findViewById(R.id.set);
         set_button.setOnClickListener (new View.OnClickListener() {
             public void onClick (View v) {
@@ -93,14 +99,14 @@ public class MainActivity extends Activity implements OnDateChangedListener, OnT
             e.printStackTrace();
         }
         entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,"application/json"));
-        client.post(getApplicationContext(),HttpClient.SERVER_URL,entity,"application/json",new AsyncHttpResponseHandler() {
 
+        client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(""),entity,"application/json",new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 Log.e("From_SERVER","success");
                 String decoded=null;
                 try {
-                     decoded=new String(responseBody,"UTF-8");
+                    decoded=new String(responseBody,"UTF-8");
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
@@ -113,53 +119,7 @@ public class MainActivity extends Activity implements OnDateChangedListener, OnT
             }
         } );
 
-        /*
-        client.post(getApplicationContext(),HttpClient.SERVER_URL,entity,"application/json",new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                super.onSuccess(statusCode, headers, response);
-                Log.e("From_SERVER","ok");
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                super.onFailure(statusCode, headers, throwable, errorResponse);
-                Log.e("From_SERVER","fail");
-            }
-        } );
-
-        /*
-        RequestParams params = new RequestParams();
-        params.put("id","test");
-        params.put("pwd","testpwd");
-        HttpClient.get("", params, new AsyncHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                Log.i("Node","success");
-            }
-            @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.i("Node","fail");
-            }
-        } );
-
-        RequestParams params = new RequestParams();
-        params.put("id","test");
-        params.put("pwd","testpwd");
-        HttpClient.post("", params, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                super.onSuccess(statusCode, headers, response);
-                Log.e("From_SERVER","ok");
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                super.onFailure(statusCode, headers, throwable, errorResponse);
-                Log.e("From_SERVER","fail");
-            }
-        } );*/
-
-        Intent intent=new Intent(MainActivity.this,AlarmReceiver.class);
+        Intent intent=new Intent(AlarmSettingActivity.this,AlarmReceiver.class);
         sender=PendingIntent.getBroadcast(this,0,intent,0);
         //  Calendar calendar  =Calendar.getInstance();
         //  calendar.setTimeInMillis(System.currentTimeMillis());
