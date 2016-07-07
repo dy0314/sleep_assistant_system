@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
     <DatePicker
         android:id="@+id/date_picker"
         android:layout_height="wrap_content"
@@ -22,10 +21,10 @@
         android:layout_alignParentStart="true" />
 
     <Button
-        android:id="@+id/set"
+        android:id="@+id/sleepmode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="set"
+        android:text="SleepMode"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="43dp" />
@@ -37,10 +36,10 @@
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/reset"
+        android:id="@+id/cancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="reset"
+        android:text="Cancel"
         android:layout_above="@+id/time_picker"
         android:layout_alignEnd="@+id/date_picker" />
 
