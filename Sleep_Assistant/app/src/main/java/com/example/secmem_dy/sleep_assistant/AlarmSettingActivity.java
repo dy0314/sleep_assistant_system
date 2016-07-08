@@ -43,7 +43,6 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
     private PendingIntent sender;
     private Button startButton;
     private Button cancelButton;
-
     private AsyncHttpClient client;
 
     public void onCreate(Bundle savedInstanceState) {
@@ -127,6 +126,10 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
                     mManager.set(AlarmManager.RTC_WAKEUP, mCalendar.getTimeInMillis(), sender);
                     mManager.setRepeating(AlarmManager.RTC_WAKEUP, mCalendar.getTimeInMillis(), 1000 * 2, sender);
                     Log.e("FROM_SERVER","ok");
+
+                    intent=new Intent(getApplicationContext(),SleepDataService.class);
+                    startService(intent);
+
                     setAllButton(true);
                     //start Bluetooth service
                 }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
@@ -169,6 +172,9 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
                 if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//cancel Success
                     mManager.cancel(sender);
                     Log.e("FROM_SERVER","ok");
+
+                    Intent intent=new Intent(getApplicationContext(),SleepDataService.class);
+                    stopService(intent);
                     setAllButton(false);
                 }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
                     Toast.makeText(getApplicationContext(),"Cancel Failed",Toast.LENGTH_SHORT).show();

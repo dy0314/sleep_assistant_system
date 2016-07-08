@@ -25,7 +25,8 @@
                     </category></action>
             </intent-filter>
         </activity>
-
+        <service android:name=".SleepDataService" android:enabled="true">
+        </service>
     </application>
     <uses-permission
         android:name="android.permission.INTERNET"></uses-permission>

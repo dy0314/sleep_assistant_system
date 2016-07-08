@@ -9,6 +9,7 @@ public class HttpClient {
     public static final String LOGIN_URL="login";
     public static final String START_SLEEP_URL="startSleep";
     public static final String CANCEL_SLEEP_URL="cancelSleep";
+    public static final String SLEEP_DATA_URL="pushSleep";
 
     public static final String JSON_START_TIME="starttime";
     public static final String JSON_END_TIME="endtime";
