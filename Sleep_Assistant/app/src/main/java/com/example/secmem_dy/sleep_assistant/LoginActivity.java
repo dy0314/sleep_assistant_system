@@ -54,12 +54,12 @@ public class LoginActivity extends Activity {
         //check from server
         JSONObject jsonParams = new JSONObject();
         try {
-            jsonParams.put("id",id);
+            jsonParams.put(HttpClient.JSON_ID,id);
         } catch (JSONException e) {
             e.printStackTrace();
         }
         try {
-            jsonParams.put("pwd",password);
+            jsonParams.put(HttpClient.JSON_PWD,password);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -82,11 +82,11 @@ public class LoginActivity extends Activity {
                 }
                 Log.e("FROM_SERVER",ackData);
 
-                if(ackData!=null && ackData.equals("1")) {//Login Success
+                if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//Login Success
                     Log.e("FROM_SERVER","true");
                     Intent intent = new Intent(LoginActivity.this, AlarmSettingActivity.class);
                     startActivity(intent);
-                }else
+                }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
                     Toast.makeText(getApplicationContext(),"Login Failed",Toast.LENGTH_SHORT).show();
             }
             @Override

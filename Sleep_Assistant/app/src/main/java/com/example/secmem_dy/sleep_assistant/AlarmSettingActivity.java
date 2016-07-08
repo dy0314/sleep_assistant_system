@@ -26,8 +26,6 @@ import java.util.GregorianCalendar;
 
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.entity.StringEntity;
-import cz.msebera.android.httpclient.message.BasicHeader;
-import cz.msebera.android.httpclient.protocol.HTTP;
 
 /**
  * Created by SECMEM-DY on 2016-07-07.
@@ -46,34 +44,28 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
     private Button startButton;
     private Button cancelButton;
 
-    /*
-     * 통지 관련 맴버 변수
-     */
     private AsyncHttpClient client;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         client =HttpClient.getinstance();
         //알람 매니저를 취득
         mManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         //현재 시각을 취득
         mCalendar = new GregorianCalendar();
 
-        //셋 버튼, 리셋버튼의 리스너를 등록
         setContentView(R.layout.alarm);
         startButton = (Button)findViewById(R.id.sleepmode);
         startButton.setOnClickListener (new View.OnClickListener() {
             public void onClick (View v) {
                 setAlarm();
-                startButton.setEnabled(false);
-                cancelButton.setEnabled(true);
             }
         });
         cancelButton = (Button)findViewById(R.id.cancel);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 resetAlarm();
-                startButton.setEnabled(true);
-                cancelButton.setEnabled(false);
             }
         });
         startButton.setEnabled(true);
@@ -86,22 +78,26 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
         mTime.setCurrentHour(mCalendar.get(Calendar.HOUR_OF_DAY));
         mTime.setCurrentMinute(mCalendar.get(Calendar.MINUTE));
         mTime.setOnTimeChangedListener(this);
-
     }
-
+    public void setAllButton(boolean state){
+        startButton.setEnabled(!state);
+        cancelButton.setEnabled(state);
+        mDate.setEnabled(!state);
+        mTime.setEnabled(!state);
+    }
     //알람의 설정
     private void setAlarm() {
         GregorianCalendar calendar = new GregorianCalendar();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
+        SimpleDateFormat   sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Log.i("HelloAlarmActivity", sdf.format(calendar.getTime()));//time start(currnt) setted
         Log.i("HelloAlarmActivity", sdf.format(mCalendar.getTime()));//time end setted
 
         StringEntity entity=null;
         JSONObject jsonParams = new JSONObject();
         try {
-            jsonParams.put("starttime",sdf.format(calendar.getTime()));
-            jsonParams.put("endtime",sdf.format(mCalendar.getTime()));
-            jsonParams.put("id","tester");
+            jsonParams.put(HttpClient.JSON_START_TIME,sdf.format(calendar.getTime()));
+            jsonParams.put(HttpClient.JSON_END_TIME,sdf.format(mCalendar.getTime()));
+            jsonParams.put(HttpClient.JSON_ID,"tester");
         } catch (JSONException e) {
             e.printStackTrace();
             Log.e("Error","jsonParams");
@@ -113,17 +109,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             e.printStackTrace();
         }
 
-        DataTransfer mdatatransfer=new DataTransfer();
-        if(mdatatransfer.transfer(client,getApplicationContext(),entity,HttpClient.START_SLEEP_URL)){
-        //    Toast.makeText(getApplicationContext(),"Time Set Success",Toast.LENGTH_SHORT).show();
-        }else
-         //   Toast.makeText(getApplicationContext(),"Time Set Failed",Toast.LENGTH_SHORT).show();
-
-        if(mdatatransfer.returnState())
-            Toast.makeText(getApplicationContext(),"Time Set Success!!",Toast.LENGTH_SHORT).show();
-        else
-            Toast.makeText(getApplicationContext(),"Time Set Failed!!",Toast.LENGTH_SHORT).show();
-        /*client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.START_SLEEP_URL),entity,"application/json",new AsyncHttpResponseHandler() {
+        client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.START_SLEEP_URL),entity,"application/json",new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String ackData=null;
@@ -133,9 +119,17 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                if(ackData!=null && ackData.equals("1")) {//Login Success
+
+                Log.e("FROM_SERVER","ackData:"+ackData);
+                if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//Alarm Request Success
+                    Intent intent = new Intent(AlarmSettingActivity.this, AlarmReceiver.class);
+                    sender = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, 0);
+                    mManager.set(AlarmManager.RTC_WAKEUP, mCalendar.getTimeInMillis(), sender);
+                    mManager.setRepeating(AlarmManager.RTC_WAKEUP, mCalendar.getTimeInMillis(), 1000 * 2, sender);
                     Log.e("FROM_SERVER","ok");
-                }else
+                    setAllButton(true);
+                    //start Bluetooth service
+                }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
                     Toast.makeText(getApplicationContext(),"Time Set Failed",Toast.LENGTH_SHORT).show();
             }
             @Override
@@ -143,20 +137,14 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
                 Log.e("FROM_SERVER","fail");
             }
         } );
-*/
-        Intent intent=new Intent(AlarmSettingActivity.this,AlarmReceiver.class);
-        sender=PendingIntent.getBroadcast(this,0,intent,0);
-        mManager.set(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),sender);
-        mManager.setRepeating(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),1000*2,sender);
     }
 
     //알람의 해제
     private void resetAlarm() {
-        mManager.cancel(sender);
         StringEntity entity=null;
         JSONObject jsonParams = new JSONObject();
         try {
-            jsonParams.put("cancel","tester");
+            jsonParams.put(HttpClient.JSON_CANCEL,"id");
         } catch (JSONException e) {
             e.printStackTrace();
             Log.e("Error","jsonParams");
@@ -167,14 +155,8 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             Log.e("Error","StringEntity");
             e.printStackTrace();
         }
-        DataTransfer mdatatransfer=new DataTransfer();
-        if(mdatatransfer.transfer(client,getApplicationContext(),entity,HttpClient.CANCEL_SLEEP_URL)){
-         //   Toast.makeText(getApplicationContext(),"Time Set Success",Toast.LENGTH_SHORT).show();
-        }
-        //else
-          //  Toast.makeText(getApplicationContext(),"Time Set Failed",Toast.LENGTH_SHORT).show();
 
-        /*client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.CANCEL_SLEEP_URL),entity,"application/json",new AsyncHttpResponseHandler() {
+        client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.CANCEL_SLEEP_URL),entity,"application/json",new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String ackData=null;
@@ -184,16 +166,18 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                if(ackData!=null && ackData.equals("1")) {//cancel Success
+                if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//cancel Success
+                    mManager.cancel(sender);
                     Log.e("FROM_SERVER","ok");
-                }else
+                    setAllButton(false);
+                }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
                     Toast.makeText(getApplicationContext(),"Cancel Failed",Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
                 Log.e("FROM_SERVER","fail");
             }
-        } );*/
+        } );
     }
 
     //일자 설정 클래스의 상태변화 리스너
