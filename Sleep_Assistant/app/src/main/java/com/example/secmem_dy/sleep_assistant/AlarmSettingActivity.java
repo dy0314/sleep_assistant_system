@@ -88,15 +88,15 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
     private void setAlarm() {
         GregorianCalendar calendar = new GregorianCalendar();
         SimpleDateFormat   sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Log.i("HelloAlarmActivity", sdf.format(calendar.getTime()));//time start(currnt) setted
-        Log.i("HelloAlarmActivity", sdf.format(mCalendar.getTime()));//time end setted
+        Log.i("HelloAlarmActivity", "start time"+sdf.format(calendar.getTime()));//time start(currnt) setted
+        Log.i("HelloAlarmActivity", "end time"+sdf.format(mCalendar.getTime()));//time end setted
 
         StringEntity entity=null;
         JSONObject jsonParams = new JSONObject();
         try {
             jsonParams.put(HttpClient.JSON_START_TIME,sdf.format(calendar.getTime()));
             jsonParams.put(HttpClient.JSON_END_TIME,sdf.format(mCalendar.getTime()));
-            jsonParams.put(HttpClient.JSON_ID,"tester");
+            jsonParams.put(HttpClient.JSON_ID,"test");//수정해야함 진짜 id로
         } catch (JSONException e) {
             e.printStackTrace();
             Log.e("Error","jsonParams");
@@ -112,7 +112,6 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String ackData=null;
-                Log.e("FROM_SERVER","success");
                 try {
                     ackData=new String(responseBody,"UTF-8");
                 } catch (UnsupportedEncodingException e) {
@@ -125,7 +124,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
                     sender = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, 0);
                     mManager.set(AlarmManager.RTC_WAKEUP, mCalendar.getTimeInMillis(), sender);
                     mManager.setRepeating(AlarmManager.RTC_WAKEUP, mCalendar.getTimeInMillis(), 1000 * 2, sender);
-                    Log.e("FROM_SERVER","ok");
+                    Log.e("FROM_SERVER","set_alarm_succes");
 
                     intent=new Intent(getApplicationContext(),SleepDataService.class);
                     startService(intent);
@@ -137,7 +136,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.e("FROM_SERVER","fail");
+                Log.e("FROM_SERVER","set_alarm_fail");
             }
         } );
     }
@@ -147,7 +146,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
         StringEntity entity=null;
         JSONObject jsonParams = new JSONObject();
         try {
-            jsonParams.put(HttpClient.JSON_CANCEL,"id");
+            jsonParams.put(HttpClient.JSON_CANCEL,"test");
         } catch (JSONException e) {
             e.printStackTrace();
             Log.e("Error","jsonParams");
@@ -163,7 +162,6 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String ackData=null;
-                Log.e("FROM_SERVER","success");
                 try {
                     ackData=new String(responseBody,"UTF-8");
                 } catch (UnsupportedEncodingException e) {
@@ -171,17 +169,22 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
                 }
                 if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//cancel Success
                     mManager.cancel(sender);
-                    Log.e("FROM_SERVER","ok");
+                    Log.e("FROM_SERVER","success_cancel");
+
+                    Intent noiseIntent;
+                    noiseIntent=new Intent(getApplicationContext(),SleepDataService.class);
+                    stopService(noiseIntent);
 
                     Intent intent=new Intent(getApplicationContext(),SleepDataService.class);
                     stopService(intent);
+
                     setAllButton(false);
                 }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
-                    Toast.makeText(getApplicationContext(),"Cancel Failed",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(),"fail_cancel",Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.e("FROM_SERVER","fail");
+                Log.e("FROM_SERVER","fail_cancel2");
             }
         } );
     }

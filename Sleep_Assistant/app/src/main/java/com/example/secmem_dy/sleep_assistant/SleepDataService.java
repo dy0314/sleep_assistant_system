@@ -24,8 +24,10 @@ import cz.msebera.android.httpclient.entity.StringEntity;
  * Created by SECMEM-DY on 2016-07-08.
  */
 public class SleepDataService extends Service {
+
     private boolean mQuit;
     private AsyncHttpClient client;
+    private static SoundPlay mplay ;
     public void onCreate(){
         super.onCreate();
     }
@@ -40,6 +42,7 @@ public class SleepDataService extends Service {
 
     public int onStartCommand(Intent intent,int flags,int startId){
         super.onStartCommand(intent,flags,startId);
+        mplay = new SoundPlay(getApplicationContext(), R.raw.whitenoise);
         mQuit=false;
         client=HttpClient.getinstance();
         SleepDataThread thread = new SleepDataThread();
@@ -48,18 +51,18 @@ public class SleepDataService extends Service {
         return START_STICKY;
     }
     class SleepDataThread extends Thread{
-        SleepDataService mParent;
         //Handler mHandler;
-        String[] sleepDatas={"41.12","55.55","66.63","45"};
+       // String[] sleepDatas={"41.12","55.55","66.63","45"};//heart and move data
+        String[] sleepDatas={"41.12"};//heart and move data
 
         public void run(){//take data from gears2
             for(int idx=0;mQuit == false;idx++){
                 Message msg = new Message();
                 msg.what=0;
-                msg.obj=sleepDatas[idx%sleepDatas.length];
+                msg.obj=sleepDatas[idx%sleepDatas.length];//transfer
                 mHandler.sendMessage(msg);
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(1000*60);
                 }catch(Exception e){
                     e.printStackTrace();
                 }
@@ -93,20 +96,32 @@ public class SleepDataService extends Service {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                         String ackData=null;
-                        Log.e("FROM_SERVER","success");
+                        Log.e("FROM_SERVER","success_getAck");
                         try {
                             ackData=new String(responseBody,"UTF-8");
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                         }
-                        if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//cancel Success
-                            Log.e("FROM_SERVER","ok");
-                        }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
-                            Toast.makeText(getApplicationContext(),"Cancel Failed",Toast.LENGTH_SHORT).show();
+                        if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {// Success
+//                            mplay.play();
+
+                            Intent noiseIntent;
+                            noiseIntent=new Intent(getApplicationContext(),WhiteNoiseService.class);
+                            startService(noiseIntent);
+
+                            Log.e("FROM_SERVER","state_success");
+                        }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL)){
+                            Log.e("FROM_SERVER","state_fail");
+                        }
+                        else if(ackData!=null && ackData.equals(HttpClient.ACK_PLAY_WHITE_NOISE)){
+                            //mplay.play();
+                        }else if(ackData!=null && ackData.equals(HttpClient.ACK_STOP_WHITE_NOISE)){
+                            //mplay.stop();
+                        }
                     }
                     @Override
                     public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                        Log.e("FROM_SERVER","fail");
+                        Log.e("FROM_SERVER","data_send_fail");
                     }
                 } );
             }

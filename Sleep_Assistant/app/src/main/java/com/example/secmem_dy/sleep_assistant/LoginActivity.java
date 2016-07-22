@@ -54,7 +54,8 @@ public class LoginActivity extends Activity {
         //check from server
         JSONObject jsonParams = new JSONObject();
         try {
-            jsonParams.put(HttpClient.JSON_ID,id);
+            //jsonParams.put(HttpClient.JSON_ID,id);
+            jsonParams.put(HttpClient.JSON_ID,"test");//수정 필요
         } catch (JSONException e) {
             e.printStackTrace();
         }
