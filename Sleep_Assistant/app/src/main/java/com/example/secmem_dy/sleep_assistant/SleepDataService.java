@@ -33,6 +33,7 @@ public class SleepDataService extends Service {
     }
     public void onDestroy(){
         super.onDestroy();
+        mplay.stop();
         mQuit=true;
     }
     @Override
@@ -85,14 +86,9 @@ public class SleepDataService extends Service {
                     e.printStackTrace();
                     Log.e("Error","jsonParams");
                 }
-                try {
-                    entity = new StringEntity(jsonParams.toString());
-                } catch (UnsupportedEncodingException e) {
-                    Log.e("Error","StringEntity");
-                    e.printStackTrace();
-                }
+                entity=HttpClient.makeStringEntity(jsonParams);
 
-                client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.SLEEP_DATA_URL),entity,"application/json",new AsyncHttpResponseHandler() {
+                client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.PUSH_SLEEP_URL),entity,"application/json",new AsyncHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                         String ackData=null;
@@ -103,12 +99,6 @@ public class SleepDataService extends Service {
                             e.printStackTrace();
                         }
                         if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {// Success
-//                            mplay.play();
-
-                            Intent noiseIntent;
-                            noiseIntent=new Intent(getApplicationContext(),WhiteNoiseService.class);
-                            startService(noiseIntent);
-
                             Log.e("FROM_SERVER","state_success");
                         }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL)){
                             Log.e("FROM_SERVER","state_fail");
