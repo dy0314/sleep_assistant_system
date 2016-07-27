@@ -4,7 +4,7 @@
 <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"></SignatureMethod>
 <Reference URI="bin%2Fsleep_assistant_gear">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
-<DigestValue>MZX9KlcgH/ikwz0I4+Zd/2inx4ssPkCi33IoDQqI09Q=</DigestValue>
+<DigestValue>kxUUq0bIYCve4qoy7W/iLN0yR+ZLDrHSyUk/fo1uAkI=</DigestValue>
 </Reference>
 <Reference URI="shared%2Fres%2Fsleep_assistant_gear.png">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
@@ -23,9 +23,9 @@
 </Reference>
 </SignedInfo>
 <SignatureValue>
-ZrWeelb0vEMOmRCfMZXqEZKWeRTWdqTQgEqrBFOyiyEzKLefw/BysM5VRpiWKVXyjZB5cKpo6tBj
-Ya816iu68V357/48w9MYpr+eIMIWZDz5zks5+Nc2iRJuQQK3nwkyQYiczNIYT5+77hPoMxWJScQi
-csjVJ/1VzCuP8IuvxeA=
+NxVw6Qi8CYgHu8LafYcB4g/gi4idceopwawbOEtjukcsvYT6bnUBMuxRwZV33yUlGUrDgtGs86ZC
+ydMz0PvahmjOINWnG7AqLzqnZZSgg7XP94l0xdSiwgOGDvDlMMoC6PzoTLFzhmUsp1B2+LV/WWpK
+72K1Jbnybewa1EqCXS4=
 </SignatureValue>
 <KeyInfo>
 <X509Data>

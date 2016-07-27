@@ -39,7 +39,7 @@ static void _accerleration_value(sensor_h sensor, sensor_event_s *sensor_data, v
 		return;
 	char buf[PATH_MAX];
 	appdata_s *ad = (appdata_s*)user_data;
-	sprintf(buf, "X : %0.1f / Y : %0.1f / Z : %0.1f",
+	sprintf(buf, "<align=center> <font_size=20> X : %0.1f / Y : %0.1f / Z : %0.1f </font> </align>",
 			sensor_data->values[0], sensor_data->values[1], sensor_data->values[2]);
 	elm_object_text_set(ad->accerlerateLabel, buf);
 }
@@ -50,8 +50,8 @@ static void _HRM_value(sensor_h sensor, sensor_event_s *sensor_data, void
 	char buf[PATH_MAX];
 	char buf2[PATH_MAX];
 	appdata_s *ad = (appdata_s*)user_data;
-	sprintf(buf, "Heart Rate : %0.1f", sensor_data->values[0]);
-	sprintf(buf2, "Peek-to-Peek : %0.1f", sensor_data->values[2]);
+	sprintf(buf, "<align=center> <font_size=20> Heart Rate : %0.1f </font> </align>", sensor_data->values[0]);
+	sprintf(buf2, "<align=center> <font_size=20> Peek-to-Peek : %0.1f </font> </align>", sensor_data->values[2]);
 	elm_object_text_set(ad->HRMLabel, buf);
 	elm_object_text_set(ad->peekLabel, buf2);
 }
@@ -111,11 +111,11 @@ create_base_gui(appdata_s *ad)
 	ad->peekLabel = elm_label_add(ad->conform);
 	ad->accerlerateLabel = elm_label_add(ad->conform);
 	evas_object_move(ad->HRMLabel,20,20);
-	evas_object_resize(ad->HRMLabel,300,80);
-	evas_object_move(ad->peekLabel, 20, 100);
-	evas_object_resize(ad->peekLabel, 300, 80);
-	evas_object_move(ad->accerlerateLabel, 20, 180);
-	evas_object_resize(ad->accerlerateLabel, 390, 80);
+	evas_object_resize(ad->HRMLabel,300,30);
+	evas_object_move(ad->peekLabel, 20, 50);
+	evas_object_resize(ad->peekLabel, 300, 30);
+	evas_object_move(ad->accerlerateLabel, 20, 80);
+	evas_object_resize(ad->accerlerateLabel, 300, 30);
 	evas_object_show(ad->HRMLabel);
 	evas_object_show(ad->peekLabel);
 	evas_object_show(ad->accerlerateLabel);
