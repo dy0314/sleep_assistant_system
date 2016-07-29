@@ -16,6 +16,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
 
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.entity.StringEntity;
@@ -28,6 +30,7 @@ public class SleepDataService extends Service {
     private boolean mQuit;
     private AsyncHttpClient client;
     private static SoundPlay mplay ;
+    private String id;
     public void onCreate(){
         super.onCreate();
     }
@@ -43,11 +46,12 @@ public class SleepDataService extends Service {
 
     public int onStartCommand(Intent intent,int flags,int startId){
         super.onStartCommand(intent,flags,startId);
+        id=intent.getStringExtra("ID");
         mplay = new SoundPlay(getApplicationContext(), R.raw.whitenoise);
         mQuit=false;
         client=HttpClient.getinstance();
         SleepDataThread thread = new SleepDataThread();
-        Log.e("SleepDataService","startThread");
+        Log.e("SleepDataService","startThread client's id is "+id);
         thread.start();
         return START_STICKY;
     }
@@ -81,7 +85,12 @@ public class SleepDataService extends Service {
                 StringEntity entity=null;
                 JSONObject jsonParams = new JSONObject();
                 try {
+                    GregorianCalendar currenttTimecalendar = new GregorianCalendar();
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+                    jsonParams.put(HttpClient.JSON_ID,"test");
                     jsonParams.put(HttpClient.JSON_HEART_RATE,currntData);
+                    jsonParams.put(HttpClient.JSON_CURRNT_TIME,sdf.format(currenttTimecalendar.getTime()));
                 } catch (JSONException e) {
                     e.printStackTrace();
                     Log.e("Error","jsonParams");

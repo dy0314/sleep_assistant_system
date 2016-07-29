@@ -25,6 +25,15 @@
                     </category></action>
             </intent-filter>
         </activity>
+
+        <activity android:name=".ShowDataActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.ShowDataActivity">
+                    <category android:name="android.intent.category.DEFAULT">
+                    </category></action>
+            </intent-filter>
+        </activity>
+
         <service android:name=".SleepDataService" android:enabled="true">
         </service>
         <service android:name=".WhiteNoiseService" android:enabled="true">

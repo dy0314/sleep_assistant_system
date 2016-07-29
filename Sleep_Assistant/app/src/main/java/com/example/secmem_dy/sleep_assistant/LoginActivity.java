@@ -57,7 +57,6 @@ public class LoginActivity extends Activity {
         JSONObject jsonParams = new JSONObject();
         try {
             id="test";
-
             jsonParams.put(HttpClient.JSON_ID,id);
             jsonParams.put(HttpClient.JSON_PWD,password);
         } catch (JSONException e) {

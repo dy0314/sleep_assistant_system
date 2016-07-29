@@ -31,7 +31,6 @@ import cz.msebera.android.httpclient.entity.StringEntity;
  * Created by SECMEM-DY on 2016-07-07.
  */
 public class AlarmSettingActivity extends Activity implements DatePicker.OnDateChangedListener, TimePicker.OnTimeChangedListener {
-
     // 알람 메니저
     private AlarmManager mManager;
     private AlarmManager postManager;
@@ -46,6 +45,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
 
     private Button startButton;
     private Button cancelButton;
+    private Button showButton;
     private AsyncHttpClient client;
 
     private long startMiliTime;
@@ -64,6 +64,14 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
         mCalendar = new GregorianCalendar();
 
         setContentView(R.layout.alarm);
+        showButton=(Button)findViewById(R.id.show);
+        showButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(AlarmSettingActivity.this,ShowDataActivity.class);
+                intent.putExtra("ID",id);
+                startActivity(intent);
+            }
+        });
         startButton = (Button)findViewById(R.id.sleepmode);
         startButton.setOnClickListener (new View.OnClickListener() {
             public void onClick (View v) {
@@ -146,6 +154,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
                     Log.e("FROM_SERVER","set_alarm_succes");
 
                     intent=new Intent(getApplicationContext(),SleepDataService.class);
+                    intent.putExtra("ID",id);
                     startService(intent);
                     setAllButton(true);
                     //start Bluetooth service
@@ -164,7 +173,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
         StringEntity entity=null;
         JSONObject jsonParams = new JSONObject();
         try {
-            jsonParams.put(HttpClient.JSON_CANCEL,"test");
+            jsonParams.put(HttpClient.JSON_CANCEL,id);
         } catch (JSONException e) {
             e.printStackTrace();
             Log.e("Error","jsonParams");
@@ -197,7 +206,11 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             }
         } );
     }
-
+    /*public void onBackPressed(){
+        Intent intent=new Intent(getApplicationContext(),SleepDataService.class);
+        stopService(intent);
+        onDestroy();
+    }*/
     //일자 설정 클래스의 상태변화 리스너
     public void onDateChanged (DatePicker view, int year, int monthOfYear, int dayOfMonth) {
         mCalendar.set (year, monthOfYear, dayOfMonth, mTime.getCurrentHour(), mTime.getCurrentMinute());

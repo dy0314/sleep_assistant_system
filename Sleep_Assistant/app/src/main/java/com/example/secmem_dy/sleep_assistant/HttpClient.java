@@ -21,6 +21,8 @@ public class HttpClient {
     public static final String CANCEL_SLEEP_URL="cancelSleep";
     public static final String PUSH_SLEEP_URL="pushSleep";
     public static final String WAKEUP_SLEEP_URL="wakeupSleep";
+    public static final String SHOW_VISUAL_DATA_URL="visualdata";
+
 
     public static final String JSON_START_TIME="starttime";
     public static final String JSON_END_TIME="endtime";
@@ -29,14 +31,13 @@ public class HttpClient {
     public static final String JSON_PWD="pwd";
     public static final String JSON_HEART_RATE="heartRate";
     public static final String JSON_MOVE="move";
-    public static final String JSON_CURRNT_TIME="currnttime";
+    public static final String JSON_CURRNT_TIME="currenttime";
 
     public static final String ACK_SUCCESS="1";
     public static final String ACK_FAIL="2";
 
     public static final String ACK_PLAY_WHITE_NOISE="3";
     public static final String ACK_STOP_WHITE_NOISE="4";
-
     public static final String ACK_STOP_SERVICE="5";
 
     private static AsyncHttpClient client = new AsyncHttpClient();
