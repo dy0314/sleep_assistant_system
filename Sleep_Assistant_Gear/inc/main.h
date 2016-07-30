@@ -15,16 +15,6 @@
 #include <dlog.h>
 #include <sensor.h>
 
-
-typedef struct _status_info {
-	Evas_Object *win;
-	Evas_Object *conform;
-	Evas_Object *HRMLabel;
-	Evas_Object *peekLabel;
-	Evas_Object *accerlerateLabel;
-} statusinfo;
-
-
 typedef struct appdata {
 	Evas_Object *win;
 	Evas_Object *conform;
@@ -34,6 +24,14 @@ typedef struct appdata {
 	Evas_Object *popup;
 	Evas_Object *button;
 	Eext_Circle_Surface *circle_surface;
+	double currentHRM;
+	int HRM50;
+	int HRM75;
+	Evas_Object *HRMLabel;
+	Evas_Object *check50Label;
+	Evas_Object *check75Label;
+	Evas_Object *peekLabel;
+	Evas_Object *accerlerateLabel;
 	struct tm saved_time;
 } appdata_s;
 
@@ -45,6 +43,12 @@ typedef struct _sensor_info
 
 static sensorinfo HRM_info;
 static sensorinfo accerlerate_info;
+
+void _HRM_value(sensor_h sensor, sensor_event_s *sensor_data, void *user_data);
+void start_heartrate_sensor(appdata_s *ad);
+
+void _accerleration_value(sensor_h sensor, sensor_event_s *sensor_data, void *user_data);
+void start_acceleration_sensor(appdata_s *ad);
 
 void alarm_cb(void *data, Evas_Object * obj, void *event_info);
 void status_cb(void *data, Evas_Object * obj, void *event_info);

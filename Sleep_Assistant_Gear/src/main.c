@@ -16,50 +16,6 @@ typedef struct _item_data {
 	Elm_Object_Item *item;
 } item_data;
 
-static void _accerleration_value(sensor_h sensor, sensor_event_s *sensor_data, void
-		*user_data)
-{
-	if( sensor_data->value_count < 3 )
-		return;
-	char buf[PATH_MAX];
-	appdata_s *ad = (appdata_s*)user_data;
-	sprintf(buf, "<align=center> <font_size=20> X : %0.1f / Y : %0.1f / Z : %0.1f </font> </align>",
-			sensor_data->values[0], sensor_data->values[1], sensor_data->values[2]);
-	//elm_object_text_set(ad->accerlerateLabel, buf); - print to screen
-}
-
-static void _HRM_value(sensor_h sensor, sensor_event_s *sensor_data, void
-		*user_data)
-{
-	char buf[PATH_MAX];
-	char buf2[PATH_MAX];
-	appdata_s *ad = (appdata_s*)user_data;
-	sprintf(buf, "<align=center> <font_size=20> Heart Rate : %0.1f </font> </align>", sensor_data->values[0]);
-	//sprintf(buf2, "<align=center> <font_size=20> Peek-to-Peek : %0.1f </font> </align>", sensor_data->values[2]);
-	//elm_object_text_set(ad->HRMLabel, buf); - print to screen
-	//elm_object_text_set(ad->peekLabel, buf2);
-}
-
-static void
-start_acceleration_sensor(appdata_s *ad)
-{
-	sensor_error_e err = SENSOR_ERROR_NONE;
-	sensor_get_default_sensor(SENSOR_ACCELEROMETER, &accerlerate_info.sensor);
-	err = sensor_create_listener(accerlerate_info.sensor, &accerlerate_info.sensor_listener);
-	sensor_listener_set_event_cb(accerlerate_info.sensor_listener, 100, _accerleration_value, ad);
-	sensor_listener_start(accerlerate_info.sensor_listener);
-}
-
-static void
-start_heartrate_sensor(appdata_s *ad)
-{
-	sensor_error_e err = SENSOR_ERROR_NONE;
-	sensor_get_default_sensor(SENSOR_HRM, &HRM_info.sensor);
-	err = sensor_create_listener(HRM_info.sensor, &HRM_info.sensor_listener);
-	sensor_listener_set_event_cb(HRM_info.sensor_listener, 100, _HRM_value, ad);
-	sensor_listener_start(HRM_info.sensor_listener);
-}
-
 static void
 win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
 {
@@ -82,7 +38,7 @@ _gl_menu_title_text_get(void *data, Evas_Object *obj, const char *part)
 {
 	char buf[1024];
 
-	snprintf(buf, 1023, "%s", "<align=center> <font_size=20>Sleep Assistant </font> </align>");
+	snprintf(buf, 1023, "%s", "<align=center> <font_size=30>Sleep Assistant </font> </align>");
 	return strdup(buf);
 }
 
@@ -223,6 +179,9 @@ create_base_gui(appdata_s *ad)
 
 	/* Show window after base gui is set up */
 	evas_object_show(ad->win);
+	start_acceleration_sensor(ad);
+	start_heartrate_sensor(ad);
+
 	/*
   ad->win = elm_win_util_standard_add(PACKAGE, PACKAGE);
   elm_win_autodel_set(ad->win, EINA_TRUE);
@@ -265,8 +224,6 @@ create_base_gui(appdata_s *ad)
   evas_object_show(ad->accerlerateLabel);
 
   evas_object_show(ad->win);
-  start_acceleration_sensor(ad);
-  start_heartrate_sensor(ad);
 	 */
 }
 

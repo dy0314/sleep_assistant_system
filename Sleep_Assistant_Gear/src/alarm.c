@@ -37,7 +37,7 @@ void alarm_cb(void *data, Evas_Object *obj, void *event_info)
 
 	layout = elm_layout_add(popup);
 	elm_layout_theme_set(layout, "layout", "popup", "content/circle");
-
+	elm_object_part_text_set(layout, "elm.text.title", "Alarm Info");
 	elm_object_part_text_set(layout, "elm.text", "Alarm does not set yet...");
 	elm_object_content_set(popup, layout);
 
