@@ -7,7 +7,7 @@
 
     <DatePicker
         android:id="@+id/date_picker"
-        android:layout_height="wrap_content"
+        android:layout_height="200dp"
         android:layout_width="wrap_content"
         android:datePickerMode="spinner"
         android:calendarViewShown="false" />
@@ -16,7 +16,7 @@
         android:id="@+id/time_picker"
         android:timePickerMode="spinner"
         android:layout_width="235dp"
-        android:layout_height="183dp"
+        android:layout_height="150dp"
         android:layout_alignBottom="@+id/date_picker"
         android:layout_alignParentStart="true" />
 
@@ -28,7 +28,6 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="43dp" />
-
 
     <TextView
         android:id="@+id/text_view"
@@ -42,5 +41,13 @@
         android:text="Cancel"
         android:layout_above="@+id/time_picker"
         android:layout_alignEnd="@+id/date_picker" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show"
+        android:id="@+id/show"
+        android:layout_gravity="right" />
 
 </LinearLayout>
