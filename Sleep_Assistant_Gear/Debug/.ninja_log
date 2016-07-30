@@ -7,3 +7,7 @@
 377	509	0	sleep_assistant_gear	a5fbf4c5e365e40c
 2	338	0	src/sleep_assistant_gear.o	7eed5af09196133e
 338	461	0	sleep_assistant_gear	a5fbf4c5e365e40c
+0	2575	0	src/alarm.o	71fcd78a896be3a2
+5	2582	0	src/status.o	d733147ffbd7b542
+3	2604	0	src/main.o	8b06e69e7ce69f1e
+2604	2900	0	sleep_assistant_gear	301ad3c3e0a51a4e
