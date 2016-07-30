@@ -2,17 +2,17 @@
 <manifest xmlns="http://tizen.org/ns/packages" api-version="2.3.1" package="org.example.sleep_assistant_gear" version="1.0.0">
     <profile name="wearable"/>
     <ui-application appid="org.example.sleep_assistant_gear" exec="sleep_assistant_gear" multiple="false" nodisplay="false" taskmanage="true" type="capp">
-        <label>sleep_assistant_gear</label>
-        <icon>sleep_assistant_gear.png</icon>
+        <label>Sleep Assistant</label>
+        <icon>icon.png</icon>
     </ui-application>
     <privileges>
         <privilege>http://tizen.org/privilege/healthinfo</privilege>
     </privileges>
-    <feature name="http://tizen.org/feature/sensor.heart_rate_monitor.led_green">true</feature>
-    <feature name="http://tizen.org/feature/sensor.heart_rate_monitor">true</feature>
     <feature name="http://tizen.org/feature/sensor.heart_rate_monitor.led_ir">true</feature>
-    <feature name="http://tizen.org/feature/sensor.proximity">true</feature>
-    <feature name="http://tizen.org/feature/sensor.linear_acceleration">true</feature>
     <feature name="http://tizen.org/feature/sensor.accelerometer">true</feature>
     <feature name="http://tizen.org/feature/sensor.heart_rate_monitor.led_red">true</feature>
+    <feature name="http://tizen.org/feature/sensor.linear_acceleration">true</feature>
+    <feature name="http://tizen.org/feature/sensor.heart_rate_monitor.led_green">true</feature>
+    <feature name="http://tizen.org/feature/sensor.heart_rate_monitor">true</feature>
+    <feature name="http://tizen.org/feature/sensor.proximity">true</feature>
 </manifest>
