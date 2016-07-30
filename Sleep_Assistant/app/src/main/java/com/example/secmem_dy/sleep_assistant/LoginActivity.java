@@ -30,6 +30,8 @@ public class LoginActivity extends Activity {
     private CheckBox autoLogin;
     private Button loginButton;
     private AsyncHttpClient client;
+    private String id;
+    private String password;
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //check auto login
@@ -49,27 +51,20 @@ public class LoginActivity extends Activity {
     }
     private void checkLogin() {
         StringEntity entity=null;
-        String id=idInput.getText().toString();
-        String password=passwordInput.getText().toString();
+        id=idInput.getText().toString();
+        password=passwordInput.getText().toString();
         //check from server
         JSONObject jsonParams = new JSONObject();
         try {
-            jsonParams.put("id",id);
+            id="test";
+            jsonParams.put(HttpClient.JSON_ID,id);
+            jsonParams.put(HttpClient.JSON_PWD,password);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        try {
-            jsonParams.put("pwd",password);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        try {
-            entity=new StringEntity(jsonParams.toString());
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,"application/json"));
+        entity=HttpClient.makeStringEntity(jsonParams);
 
+        entity.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,"application/json"));
         client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.LOGIN_URL),entity,"application/json",new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
@@ -82,11 +77,12 @@ public class LoginActivity extends Activity {
                 }
                 Log.e("FROM_SERVER",ackData);
 
-                if(ackData!=null && ackData.equals("1")) {//Login Success
+                if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//Login Success
                     Log.e("FROM_SERVER","true");
                     Intent intent = new Intent(LoginActivity.this, AlarmSettingActivity.class);
+                    intent.putExtra("ID",id);
                     startActivity(intent);
-                }else
+                }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
                     Toast.makeText(getApplicationContext(),"Login Failed",Toast.LENGTH_SHORT).show();
             }
             @Override

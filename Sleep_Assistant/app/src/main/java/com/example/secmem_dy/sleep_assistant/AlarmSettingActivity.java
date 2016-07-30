@@ -26,16 +26,14 @@ import java.util.GregorianCalendar;
 
 import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.entity.StringEntity;
-import cz.msebera.android.httpclient.message.BasicHeader;
-import cz.msebera.android.httpclient.protocol.HTTP;
 
 /**
  * Created by SECMEM-DY on 2016-07-07.
  */
 public class AlarmSettingActivity extends Activity implements DatePicker.OnDateChangedListener, TimePicker.OnTimeChangedListener {
-
     // 알람 메니저
     private AlarmManager mManager;
+    private AlarmManager postManager;
     // 설정 일시
     private GregorianCalendar mCalendar;
     //일자 설정 클래스
@@ -43,159 +41,176 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
     //시작 설정 클래스
     private TimePicker mTime;
     private PendingIntent sender;
+    private PendingIntent preSender;
+
     private Button startButton;
     private Button cancelButton;
-
-    /*
-     * 통지 관련 맴버 변수
-     */
+    private Button showButton;
     private AsyncHttpClient client;
+
+    private long startMiliTime;
+    private long endMiliTime;
+    private String id;
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Intent intent =getIntent();
+        id=intent.getStringExtra("ID");
+
         client =HttpClient.getinstance();
         //알람 매니저를 취득
         mManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        postManager=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
         //현재 시각을 취득
         mCalendar = new GregorianCalendar();
 
-        //셋 버튼, 리셋버튼의 리스너를 등록
         setContentView(R.layout.alarm);
+        showButton=(Button)findViewById(R.id.show);
+        showButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(AlarmSettingActivity.this,ShowDataActivity.class);
+                intent.putExtra("ID",id);
+                startActivity(intent);
+            }
+        });
         startButton = (Button)findViewById(R.id.sleepmode);
         startButton.setOnClickListener (new View.OnClickListener() {
             public void onClick (View v) {
                 setAlarm();
-                startButton.setEnabled(false);
-                cancelButton.setEnabled(true);
             }
         });
         cancelButton = (Button)findViewById(R.id.cancel);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 resetAlarm();
-                startButton.setEnabled(true);
-                cancelButton.setEnabled(false);
             }
         });
         startButton.setEnabled(true);
         cancelButton.setEnabled(false);
 
+        //시간 설정
         mDate = (DatePicker)findViewById(R.id.date_picker);
         mDate.init (mCalendar.get(Calendar.YEAR), mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH), this);
+
         mTime = (TimePicker)findViewById(R.id.time_picker);
-        //일시 설정 클래스로 현재 시각을 설정
         mTime.setCurrentHour(mCalendar.get(Calendar.HOUR_OF_DAY));
         mTime.setCurrentMinute(mCalendar.get(Calendar.MINUTE));
         mTime.setOnTimeChangedListener(this);
-
     }
-
+    public void setAllButton(boolean state){
+        startButton.setEnabled(!state);
+        cancelButton.setEnabled(state);
+        mDate.setEnabled(!state);
+        mTime.setEnabled(!state);
+    }
     //알람의 설정
     private void setAlarm() {
-        GregorianCalendar calendar = new GregorianCalendar();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
-        Log.i("HelloAlarmActivity", sdf.format(calendar.getTime()));//time start(currnt) setted
-        Log.i("HelloAlarmActivity", sdf.format(mCalendar.getTime()));//time end setted
+        GregorianCalendar startTimecalendar = new GregorianCalendar();
+        SimpleDateFormat   sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        startMiliTime=startTimecalendar.getTimeInMillis();
+        endMiliTime=mCalendar.getTimeInMillis();
+        if(startMiliTime>=endMiliTime){
+            Toast.makeText(getApplicationContext(),"알람을 설정할 수 없습니다.",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Log.i("TimeSet", startMiliTime+"= start time"+sdf.format(startTimecalendar.getTime()));//time start(currnt) setted
+        Log.i("TimeSet", endMiliTime+"= end time"+sdf.format(mCalendar.getTime()));//time end setted
 
         StringEntity entity=null;
         JSONObject jsonParams = new JSONObject();
         try {
-            jsonParams.put("starttime",sdf.format(calendar.getTime()));
-            jsonParams.put("endtime",sdf.format(mCalendar.getTime()));
-            jsonParams.put("id","tester");
+            jsonParams.put(HttpClient.JSON_START_TIME,sdf.format(startTimecalendar.getTime()));//set "yyyy-MM-dd HH:mm:ss" format
+            jsonParams.put(HttpClient.JSON_END_TIME,sdf.format(mCalendar.getTime()));
+            jsonParams.put(HttpClient.JSON_ID,id);//수정해야함 진짜 id로
+            Log.e("FROM_SERVER","send ID is" + id);
         } catch (JSONException e) {
             e.printStackTrace();
             Log.e("Error","jsonParams");
         }
-        try {
-            entity = new StringEntity(jsonParams.toString());
-        } catch (UnsupportedEncodingException e) {
-            Log.e("Error","StringEntity");
-            e.printStackTrace();
-        }
+        entity=HttpClient.makeStringEntity(jsonParams);
 
-        DataTransfer mdatatransfer=new DataTransfer();
-        if(mdatatransfer.transfer(client,getApplicationContext(),entity,HttpClient.START_SLEEP_URL)){
-        //    Toast.makeText(getApplicationContext(),"Time Set Success",Toast.LENGTH_SHORT).show();
-        }else
-         //   Toast.makeText(getApplicationContext(),"Time Set Failed",Toast.LENGTH_SHORT).show();
-
-        if(mdatatransfer.returnState())
-            Toast.makeText(getApplicationContext(),"Time Set Success!!",Toast.LENGTH_SHORT).show();
-        else
-            Toast.makeText(getApplicationContext(),"Time Set Failed!!",Toast.LENGTH_SHORT).show();
-        /*client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.START_SLEEP_URL),entity,"application/json",new AsyncHttpResponseHandler() {
+        client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.START_SLEEP_URL),entity,"application/json",new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String ackData=null;
-                Log.e("FROM_SERVER","success");
                 try {
                     ackData=new String(responseBody,"UTF-8");
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                if(ackData!=null && ackData.equals("1")) {//Login Success
-                    Log.e("FROM_SERVER","ok");
-                }else
+
+                Log.e("FROM_SERVER","ackData:"+ackData);
+                if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//Alarm Request Success
+                    Intent intent = new Intent(AlarmSettingActivity.this, AlarmReceiver.class);
+                    sender = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, 0);//request code를 다르게 설정해야 모든 알람이 정상적으로 울린다.
+                    preSender = PendingIntent.getBroadcast(getApplicationContext(), 1, intent, 0);
+
+                    mManager.set(AlarmManager.RTC_WAKEUP, endMiliTime, sender);
+                    if(endMiliTime>=startMiliTime+1000*60*30)
+                        postManager.set(AlarmManager.RTC_WAKEUP,endMiliTime-1000*60*30, preSender);//30분 전 울릴 알람을 등록
+                    else
+                        Toast.makeText(getApplicationContext(),"can't post Alarm",Toast.LENGTH_SHORT).show();
+
+                    Log.e("FROM_SERVER","set_alarm_succes");
+
+                    intent=new Intent(getApplicationContext(),SleepDataService.class);
+                    intent.putExtra("ID",id);
+                    startService(intent);
+                    setAllButton(true);
+                    //start Bluetooth service
+                }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
                     Toast.makeText(getApplicationContext(),"Time Set Failed",Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.e("FROM_SERVER","fail");
+                Log.e("FROM_SERVER","set_alarm_fail");
             }
         } );
-*/
-        Intent intent=new Intent(AlarmSettingActivity.this,AlarmReceiver.class);
-        sender=PendingIntent.getBroadcast(this,0,intent,0);
-        mManager.set(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),sender);
-        mManager.setRepeating(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),1000*2,sender);
     }
 
     //알람의 해제
     private void resetAlarm() {
-        mManager.cancel(sender);
         StringEntity entity=null;
         JSONObject jsonParams = new JSONObject();
         try {
-            jsonParams.put("cancel","tester");
+            jsonParams.put(HttpClient.JSON_CANCEL,id);
         } catch (JSONException e) {
             e.printStackTrace();
             Log.e("Error","jsonParams");
         }
-        try {
-            entity = new StringEntity(jsonParams.toString());
-        } catch (UnsupportedEncodingException e) {
-            Log.e("Error","StringEntity");
-            e.printStackTrace();
-        }
-        DataTransfer mdatatransfer=new DataTransfer();
-        if(mdatatransfer.transfer(client,getApplicationContext(),entity,HttpClient.CANCEL_SLEEP_URL)){
-         //   Toast.makeText(getApplicationContext(),"Time Set Success",Toast.LENGTH_SHORT).show();
-        }
-        //else
-          //  Toast.makeText(getApplicationContext(),"Time Set Failed",Toast.LENGTH_SHORT).show();
+        entity=HttpClient.makeStringEntity(jsonParams);
 
-        /*client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.CANCEL_SLEEP_URL),entity,"application/json",new AsyncHttpResponseHandler() {
+        client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.CANCEL_SLEEP_URL),entity,"application/json",new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String ackData=null;
-                Log.e("FROM_SERVER","success");
                 try {
                     ackData=new String(responseBody,"UTF-8");
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                if(ackData!=null && ackData.equals("1")) {//cancel Success
-                    Log.e("FROM_SERVER","ok");
-                }else
-                    Toast.makeText(getApplicationContext(),"Cancel Failed",Toast.LENGTH_SHORT).show();
+                if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//cancel Success
+                    mManager.cancel(sender);
+                    mManager.cancel(preSender);
+                    Log.e("FROM_SERVER","success_cancel");
+                    Intent intent=new Intent(getApplicationContext(),SleepDataService.class);
+                    stopService(intent);
+
+                    setAllButton(false);
+                }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
+                    Toast.makeText(getApplicationContext(),"fail_cancel",Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.e("FROM_SERVER","fail");
+                Log.e("FROM_SERVER","fail_cancel2");
             }
-        } );*/
+        } );
     }
-
+    /*public void onBackPressed(){
+        Intent intent=new Intent(getApplicationContext(),SleepDataService.class);
+        stopService(intent);
+        onDestroy();
+    }*/
     //일자 설정 클래스의 상태변화 리스너
     public void onDateChanged (DatePicker view, int year, int monthOfYear, int dayOfMonth) {
         mCalendar.set (year, monthOfYear, dayOfMonth, mTime.getCurrentHour(), mTime.getCurrentMinute());
