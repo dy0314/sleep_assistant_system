@@ -25,6 +25,7 @@ start_acceleration_sensor(appdata_s *ad)
 	sensor_error_e err = SENSOR_ERROR_NONE;
 	sensor_get_default_sensor(SENSOR_ACCELEROMETER, &accerlerate_info.sensor);
 	err = sensor_create_listener(accerlerate_info.sensor, &accerlerate_info.sensor_listener);
+	sensor_listener_set_option(accerlerate_info.sensor_listener,SENSOR_OPTION_ALWAYS_ON);
 	sensor_listener_set_event_cb(accerlerate_info.sensor_listener, 100, _accerleration_value, ad);
 	sensor_listener_start(accerlerate_info.sensor_listener);
 }
