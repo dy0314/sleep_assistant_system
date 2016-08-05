@@ -87,7 +87,13 @@ void status_cb(void *data, Evas_Object *obj, void *event_info)
 	evas_object_move(ad->check50Label,10,260);
 	evas_object_resize(ad->check50Label,340,30);
 	evas_object_show(ad->check50Label);
-
+/*
+	ad->accerlerateLabel = elm_label_add(layout);
+	elm_object_content_set(popup, layout);
+	evas_object_move(ad->accerlerateLabel,10,290);
+	evas_object_resize(ad->accerlerateLabel,340,30);
+	evas_object_show(ad->accerlerateLabel);
+*/
 	ad->check75Label = elm_label_add(layout);
 	elm_object_content_set(popup, layout);
 	evas_object_move(ad->check75Label,10,290);

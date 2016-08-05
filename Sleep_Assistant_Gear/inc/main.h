@@ -27,6 +27,7 @@ typedef struct appdata {
 	double currentHRM;
 	int HRM50;
 	int HRM75;
+	int check;
 	Evas_Object *HRMLabel;
 	Evas_Object *check50Label;
 	Evas_Object *check75Label;
