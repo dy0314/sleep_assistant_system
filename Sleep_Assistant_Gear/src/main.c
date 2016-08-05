@@ -308,6 +308,7 @@ main(int argc, char *argv[])
 	int ret = 0;
 
 	ui_app_lifecycle_callback_s event_callback = {0,};
+
 	app_event_handler_h handlers[5] = {NULL, };
 
 	event_callback.create = app_create;
