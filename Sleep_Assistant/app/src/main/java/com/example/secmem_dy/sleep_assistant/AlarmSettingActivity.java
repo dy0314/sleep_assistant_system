@@ -3,9 +3,12 @@ package com.example.secmem_dy.sleep_assistant;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -51,6 +54,11 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
     private long startMiliTime;
     private long endMiliTime;
     private String id;
+
+
+    private ConsumerService mConsumerService = null;
+    private boolean mIsBound = false;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent =getIntent();
@@ -95,7 +103,77 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
         mTime.setCurrentHour(mCalendar.get(Calendar.HOUR_OF_DAY));
         mTime.setCurrentMinute(mCalendar.get(Calendar.MINUTE));
         mTime.setOnTimeChangedListener(this);
+
+        // Bind service 주로 서비스가 앱 내에서 백그라운드 작업을 담당하는 경우에 선호
+        mIsBound = bindService(new Intent(AlarmSettingActivity.this, ConsumerService.class), mConnection, Context.BIND_AUTO_CREATE);
     }
+
+    @Override
+    protected void onDestroy() {
+        // Clean up connections
+        if (mIsBound == true && mConsumerService != null) {
+            if (mConsumerService.closeConnection() == false) {
+
+            }
+        }
+        // Un-bind service
+        if (mIsBound) {
+            unbindService(mConnection);
+            mIsBound = false;
+        }
+        super.onDestroy();
+    }
+
+    public void mOnClick(View v) {
+        switch (v.getId()) {
+            case R.id.buttonConnect: {
+                if (mIsBound == true && mConsumerService != null) {
+                    Toast.makeText(getApplicationContext(), "connect request", Toast.LENGTH_LONG).show();
+                    mConsumerService.findPeers();
+                }
+                break;
+            }
+            case R.id.buttonDisconnect: {
+                if (mIsBound == true && mConsumerService != null) {
+                    if (mConsumerService.closeConnection() == false) {
+                       // updateTextView("Disconnected");
+                        Toast.makeText(getApplicationContext(), R.string.ConnectionAlreadyDisconnected, Toast.LENGTH_LONG).show();
+                       // mMessageAdapter.clear();
+                    }
+                }
+                break;
+            }
+            case R.id.buttonSend: {
+                if (mIsBound == true && mConsumerService != null) {
+                    if (mConsumerService.sendData("Hello Accessory!")) {
+                    } else {
+                        Toast.makeText(getApplicationContext(), R.string.ConnectionAlreadyDisconnected, Toast.LENGTH_LONG).show();
+                    }
+                }
+                break;
+            }
+            default:
+        }
+    }
+
+    private final ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mConsumerService = ((ConsumerService.LocalBinder) service).getService();
+            Toast.makeText(getApplicationContext(),"onServiceConnected",Toast.LENGTH_SHORT).show();
+            //updateTextView("onServiceConnected");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName className) {
+            mConsumerService = null;
+            mIsBound = false;
+            Toast.makeText(getApplicationContext(),"onServiceDisconnected",Toast.LENGTH_SHORT).show();
+            //updateTextView("onServiceDisconnected");
+        }
+    };
+
+
     public void setAllButton(boolean state){
         startButton.setEnabled(!state);
         cancelButton.setEnabled(state);
@@ -206,11 +284,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             }
         } );
     }
-    /*public void onBackPressed(){
-        Intent intent=new Intent(getApplicationContext(),SleepDataService.class);
-        stopService(intent);
-        onDestroy();
-    }*/
+
     //일자 설정 클래스의 상태변화 리스너
     public void onDateChanged (DatePicker view, int year, int monthOfYear, int dayOfMonth) {
         mCalendar.set (year, monthOfYear, dayOfMonth, mTime.getCurrentHour(), mTime.getCurrentMinute());
