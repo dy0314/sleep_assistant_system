@@ -56,8 +56,9 @@ public class SleepDataService extends Service {
         return START_STICKY;
     }
     class SleepDataThread extends Thread{
-        //Handler mHandler;
        // String[] sleepDatas={"41.12","55.55","66.63","45"};//heart and move data
+        //add BLE with gearS2
+
         String[] sleepDatas={"41.12"};//heart and move data
 
         public void run(){//take data from gears2
