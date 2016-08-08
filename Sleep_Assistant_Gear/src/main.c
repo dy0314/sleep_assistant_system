@@ -11,6 +11,8 @@ char *main_menu_names[] = {
 		"Alarm Info", "Current Status", "Test",  NULL
 };
 
+static appdata_s *object;
+
 typedef struct _item_data {
 	int index;
 	Elm_Object_Item *item;
@@ -24,6 +26,58 @@ win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
     Evas_Object *win = (Evas_Object *) data;
     elm_win_lower(win); */
 	ui_app_exit();
+}
+
+
+static void _timeout_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	if (!obj) return;
+	elm_popup_dismiss(obj);
+}
+
+static void _block_clicked_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	if (!obj) return;
+	elm_popup_dismiss(obj);
+}
+
+static void _popup_hide_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	if (!obj) return;
+	elm_popup_dismiss(obj);
+}
+static void _popup_hide_finished_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	if (!obj) return;
+	evas_object_del(obj);
+}
+
+static void _popup_toast_cb(Evas_Object *parent, char *string)
+{
+	Evas_Object *popup;
+
+
+	popup = elm_popup_add(parent);
+	elm_object_style_set(popup, "toast/circle");
+	elm_popup_orient_set(popup, ELM_POPUP_ORIENT_BOTTOM);
+	evas_object_size_hint_weight_set(popup, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	eext_object_event_callback_add(popup, EEXT_CALLBACK_BACK, _popup_hide_cb, NULL);
+	evas_object_smart_callback_add(popup, "dismissed", _popup_hide_finished_cb, NULL);
+	elm_object_part_text_set(popup, "elm.text", string);
+
+	evas_object_smart_callback_add(popup, "block,clicked", _block_clicked_cb, NULL);
+
+	elm_popup_timeout_set(popup, 2.0);
+
+	evas_object_smart_callback_add(popup, "timeout", _timeout_cb, NULL);
+
+	evas_object_show(popup);
+}
+
+void update_ui(char *data)
+{
+	dlog_print(DLOG_INFO, TAG, "Updating UI with data %s", data);
+	//_popup_toast_cb(object->naviframe, data);
 }
 
 static void
@@ -78,7 +132,7 @@ create_list_view(appdata_s *ad)
 	Evas_Object *genlist;
 	Evas_Object *circle_genlist;
 	Evas_Object *btn;
-	Evas_Object *nf = ad->nf;
+	Evas_Object *nf = ad->naviframe;
 	Elm_Object_Item *nf_it;
 	Elm_Genlist_Item_Class *itc = elm_genlist_item_class_new();
 	Elm_Genlist_Item_Class *ttc = elm_genlist_item_class_new();
@@ -134,6 +188,7 @@ create_list_view(appdata_s *ad)
 	elm_object_style_set(btn, "naviframe/end_btn/default");
 	nf_it = elm_naviframe_item_push(nf, NULL, btn, NULL, genlist, "empty");
 	elm_naviframe_item_pop_cb_set(nf_it, naviframe_pop_cb, ad->win);
+
 }
 
 static void
@@ -171,60 +226,17 @@ create_base_gui(appdata_s *ad)
 	elm_object_content_set(ad->conform, ad->layout);
 
 	/* Naviframe */
-	ad->nf = elm_naviframe_add(ad->layout);
+	ad->naviframe = elm_naviframe_add(ad->layout);
 	create_list_view(ad);
-	elm_object_part_content_set(ad->layout, "elm.swallow.content", ad->nf);
-	eext_object_event_callback_add(ad->nf, EEXT_CALLBACK_BACK, eext_naviframe_back_cb, NULL);
-	eext_object_event_callback_add(ad->nf, EEXT_CALLBACK_MORE, eext_naviframe_more_cb, NULL);
+	elm_object_part_content_set(ad->layout, "elm.swallow.content", ad->naviframe);
+	eext_object_event_callback_add(ad->naviframe, EEXT_CALLBACK_BACK, eext_naviframe_back_cb, NULL);
+	eext_object_event_callback_add(ad->naviframe, EEXT_CALLBACK_MORE, eext_naviframe_more_cb, NULL);
 
 	/* Show window after base gui is set up */
 	evas_object_show(ad->win);
+
 	start_acceleration_sensor(ad);
 	start_heartrate_sensor(ad);
-
-	/*
-  ad->win = elm_win_util_standard_add(PACKAGE, PACKAGE);
-  elm_win_autodel_set(ad->win, EINA_TRUE);
-
-  if (elm_win_wm_rotation_supported_get(ad->win)) {
-    int rots[4] = { 0, 90, 180, 270 };
-    elm_win_wm_rotation_available_rotations_set(ad->win, (const int *)(&rots), 4);
-  }
-
-  evas_object_smart_callback_add(ad->win, "delete,request", win_delete_request_cb, NULL);
-  eext_object_event_callback_add(ad->win, EEXT_CALLBACK_BACK, win_back_cb, ad);
-
-
-  ad->conform = elm_conformant_add(ad->win);
-  elm_win_indicator_mode_set(ad->win, ELM_WIN_INDICATOR_SHOW);
-  elm_win_indicator_opacity_set(ad->win, ELM_WIN_INDICATOR_OPAQUE);
-  evas_object_size_hint_weight_set(ad->conform, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-  elm_win_resize_object_add(ad->win, ad->conform);
-  evas_object_show(ad->conform);
-
-
-  char buf[PATH_MAX];
-  bool is_supported = false;
-  sensor_is_supported(SENSOR_HRM, &is_supported);
-  sprintf(buf, "Heart Rate Monitor Sensor is %s", is_supported ? "support" : "not support");
-
-  //elm_object_text_set(ad->HRMLabel, buf);
-  //sleep(1);
-  ad->HRMLabel = elm_label_add(ad->conform);
-  ad->peekLabel = elm_label_add(ad->conform);
-  ad->accerlerateLabel = elm_label_add(ad->conform);
-  evas_object_move(ad->HRMLabel,20,20);
-  evas_object_resize(ad->HRMLabel,300,30);
-  evas_object_move(ad->peekLabel, 20, 50);
-  evas_object_resize(ad->peekLabel, 300, 30);
-  evas_object_move(ad->accerlerateLabel, 20, 80);
-  evas_object_resize(ad->accerlerateLabel, 300, 30);
-  evas_object_show(ad->HRMLabel);
-  evas_object_show(ad->peekLabel);
-  evas_object_show(ad->accerlerateLabel);
-
-  evas_object_show(ad->win);
-	 */
 }
 
 static bool
@@ -237,7 +249,7 @@ app_create(void *data)
 	appdata_s *ad = data;
 
 	create_base_gui(ad);
-
+	initialize_sap();
 	return true;
 }
 
