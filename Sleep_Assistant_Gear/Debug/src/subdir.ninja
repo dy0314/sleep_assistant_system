@@ -26,6 +26,11 @@ build src/main.o.ast: build_c_ast ../src/main.c
 build src/main.o.fn: build_c_fn src/main.o.ast 
 build src/main.o.sa: build_c_sa ../src/main.c | extfn
 build src/main.o.txt: build_c_api ../src/main.c 
+build src/sap.o: build_c ../src/sap.c 
+build src/sap.o.ast: build_c_ast ../src/sap.c 
+build src/sap.o.fn: build_c_fn src/sap.o.ast 
+build src/sap.o.sa: build_c_sa ../src/sap.c | extfn
+build src/sap.o.txt: build_c_api ../src/sap.c 
 build src/status.o: build_c ../src/status.c 
 build src/status.o.ast: build_c_ast ../src/status.c 
 build src/status.o.fn: build_c_fn src/status.o.ast 

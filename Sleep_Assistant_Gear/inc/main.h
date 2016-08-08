@@ -8,18 +8,21 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
+#define TAG "sleep_assistant_gear"
+
 #include <app.h>
 #include <Elementary.h>
 #include <system_settings.h>
 #include <efl_extension.h>
 #include <dlog.h>
 #include <sensor.h>
+#include <glib.h>
 
 typedef struct appdata {
 	Evas_Object *win;
 	Evas_Object *conform;
+	Evas_Object *naviframe;
 	Evas_Object *layout;
-	Evas_Object *nf;
 	Evas_Object *datetime;
 	Evas_Object *popup;
 	Evas_Object *button;
@@ -54,13 +57,17 @@ void start_acceleration_sensor(appdata_s *ad);
 void alarm_cb(void *data, Evas_Object * obj, void *event_info);
 void status_cb(void *data, Evas_Object * obj, void *event_info);
 
+void initialize_sap();
+void update_ui(char *data);
+gboolean send_data(char *message);
+
 #ifdef  LOG_TAG
 #undef  LOG_TAG
 #endif
 #define LOG_TAG "sleep_assistant_gear"
 
 #if !defined(PACKAGE)
-#define PACKAGE "org.example.sleep_assistant_gear"
+#define PACKAGE "org.tizen.sleep_assistant_gear"
 #endif
 
 #endif /* MAIN_H_ */
