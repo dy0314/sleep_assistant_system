@@ -58,6 +58,23 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
 
     private ConsumerService mConsumerService = null;
     private boolean mIsBound = false;
+    private final ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mConsumerService = ((ConsumerService.LocalBinder) service).getService();
+            Toast.makeText(getApplicationContext(),"onServiceConnected",Toast.LENGTH_SHORT).show();
+            //updateTextView("onServiceConnected");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName className) {
+            mConsumerService = null;
+            mIsBound = false;
+            Toast.makeText(getApplicationContext(),"onServiceDisconnected",Toast.LENGTH_SHORT).show();
+            //updateTextView("onServiceDisconnected");
+        }
+    };
+
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,7 +106,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
         cancelButton = (Button)findViewById(R.id.cancel);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                resetAlarm();
+                cancelAlarm();
             }
         });
         startButton.setEnabled(true);
@@ -105,6 +122,8 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
         mTime.setOnTimeChangedListener(this);
 
         // Bind service 주로 서비스가 앱 내에서 백그라운드 작업을 담당하는 경우에 선호
+        intent=new Intent(getApplicationContext(),ConsumerService.class);
+        intent.putExtra("ID",id);
         mIsBound = bindService(new Intent(AlarmSettingActivity.this, ConsumerService.class), mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -126,7 +145,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
 
     public void mOnClick(View v) {
         switch (v.getId()) {
-            case R.id.buttonConnect: {
+           /* case R.id.buttonConnect: {
                 if (mIsBound == true && mConsumerService != null) {
                     Toast.makeText(getApplicationContext(), "connect request", Toast.LENGTH_LONG).show();
                     mConsumerService.findPeers();
@@ -142,7 +161,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
                     }
                 }
                 break;
-            }
+            }*/
             case R.id.buttonSend: {
                 if (mIsBound == true && mConsumerService != null) {
                     if (mConsumerService.sendData("Hello Accessory!")) {
@@ -155,24 +174,6 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             default:
         }
     }
-
-    private final ServiceConnection mConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            mConsumerService = ((ConsumerService.LocalBinder) service).getService();
-            Toast.makeText(getApplicationContext(),"onServiceConnected",Toast.LENGTH_SHORT).show();
-            //updateTextView("onServiceConnected");
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName className) {
-            mConsumerService = null;
-            mIsBound = false;
-            Toast.makeText(getApplicationContext(),"onServiceDisconnected",Toast.LENGTH_SHORT).show();
-            //updateTextView("onServiceDisconnected");
-        }
-    };
-
 
     public void setAllButton(boolean state){
         startButton.setEnabled(!state);
@@ -227,14 +228,16 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
                     if(endMiliTime>=startMiliTime+1000*60*30)
                         postManager.set(AlarmManager.RTC_WAKEUP,endMiliTime-1000*60*30, preSender);//30분 전 울릴 알람을 등록
                     else
-                        Toast.makeText(getApplicationContext(),"can't post Alarm",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(),"can't set 30min post Alarm",Toast.LENGTH_SHORT).show();
 
                     Log.e("FROM_SERVER","set_alarm_succes");
 
-                    intent=new Intent(getApplicationContext(),SleepDataService.class);
-                    intent.putExtra("ID",id);
-                    startService(intent);
                     setAllButton(true);
+                    if (mIsBound == true && mConsumerService != null) {
+                        Toast.makeText(getApplicationContext(), "connect request", Toast.LENGTH_LONG).show();
+                        mConsumerService.findPeers();
+                    }
+
                     //start Bluetooth service
                 }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
                     Toast.makeText(getApplicationContext(),"Time Set Failed",Toast.LENGTH_SHORT).show();
@@ -245,9 +248,16 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             }
         } );
     }
-
     //알람의 해제
-    private void resetAlarm() {
+    private void cancelAlarm() {
+        if (mIsBound == true && mConsumerService != null) {
+            if (mConsumerService.closeConnection() == false) {
+                // updateTextView("Disconnected");
+                Toast.makeText(getApplicationContext(), R.string.ConnectionAlreadyDisconnected, Toast.LENGTH_LONG).show();
+                // mMessageAdapter.clear();
+            }
+        }
+
         StringEntity entity=null;
         JSONObject jsonParams = new JSONObject();
         try {

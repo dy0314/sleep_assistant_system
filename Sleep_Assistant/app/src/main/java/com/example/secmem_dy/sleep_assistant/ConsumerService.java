@@ -30,13 +30,24 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.samsung.android.sdk.SsdkUnsupportedException;
 import com.samsung.android.sdk.accessory.SA;
 import com.samsung.android.sdk.accessory.SAAgent;
 import com.samsung.android.sdk.accessory.SAPeerAgent;
 import com.samsung.android.sdk.accessory.SASocket;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
+
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.entity.StringEntity;
 
 public class ConsumerService extends SAAgent {
     private static final String TAG = "HelloAccessory(C)";
@@ -46,6 +57,11 @@ public class ConsumerService extends SAAgent {
     private ServiceConnection mConnectionHandler = null;
     Handler mHandler = new Handler();
 
+    private boolean mQuit;
+    private AsyncHttpClient client;
+    private static SoundPlay mplay ;
+    private String id;
+
     public ConsumerService() {
         super(TAG, SASOCKET_CLASS);
     }
@@ -53,7 +69,10 @@ public class ConsumerService extends SAAgent {
     @Override
     public void onCreate() {
         super.onCreate();
+        mplay = new SoundPlay(getApplicationContext(), R.raw.whitenoise);
         SA mAccessory = new SA();
+        mQuit=false;
+        client=HttpClient.getinstance();
         try {
             mAccessory.initialize(this);
         } catch (SsdkUnsupportedException e) {
@@ -74,6 +93,7 @@ public class ConsumerService extends SAAgent {
 
     @Override
     public IBinder onBind(Intent intent) {
+        id=intent.getStringExtra("ID");//get ID;
         return mBinder;
     }
 
@@ -138,11 +158,10 @@ public class ConsumerService extends SAAgent {
         });
     }
 
-    public class ServiceConnection extends SASocket {
+    public class ServiceConnection extends SASocket {//SASocket 을 이용하기 위한 내부 클래스 생성
         public ServiceConnection() {
             super(ServiceConnection.class.getName());
         }
-
         @Override
         public void onError(int channelId, String errorMessage, int errorCode) {
         }
@@ -150,7 +169,53 @@ public class ConsumerService extends SAAgent {
         @Override
         public void onReceive(int channelId, byte[] data) {
             final String message = new String(data);
-            addMessage("Received: ", message);
+            //addMessage("Received: ", message);
+            Toast.makeText(getApplicationContext(), "get "+message, Toast.LENGTH_SHORT).show();
+            String currntData=new String(data);
+            Log.e("SEND_SERVER",currntData);
+
+            StringEntity entity=null;
+            JSONObject jsonParams = new JSONObject();
+            try {
+                GregorianCalendar currenttTimecalendar = new GregorianCalendar();
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+                jsonParams.put(HttpClient.JSON_ID,"test");
+                jsonParams.put(HttpClient.JSON_HEART_RATE,currntData);
+                jsonParams.put(HttpClient.JSON_CURRNT_TIME,sdf.format(currenttTimecalendar.getTime()));
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.e("Error","jsonParams");
+            }
+            entity=HttpClient.makeStringEntity(jsonParams);
+
+            client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.PUSH_SLEEP_URL),entity,"application/json",new AsyncHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                    String ackData=null;
+                    Log.e("FROM_SERVER","success_getAck");
+                    try {
+                        ackData=new String(responseBody,"UTF-8");
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {// Success
+                        Log.e("FROM_SERVER","state_success");
+                    }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL)){
+                        Log.e("FROM_SERVER","state_fail");
+                    }
+                    else if(ackData!=null && ackData.equals(HttpClient.ACK_PLAY_WHITE_NOISE)){
+                        //mplay.play();
+                    }else if(ackData!=null && ackData.equals(HttpClient.ACK_STOP_WHITE_NOISE)){
+                        //mplay.stop();
+                    }
+
+                }
+                @Override
+                public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                    Log.e("FROM_SERVER","data_send_fail");
+                }
+            } );
         }
 
         @Override
@@ -179,7 +244,7 @@ public class ConsumerService extends SAAgent {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            addMessage("Sent: ", data);
+            //addMessage("Sent: ", data);
         }
         return retvalue;
     }
@@ -230,7 +295,6 @@ public class ConsumerService extends SAAgent {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(getApplicationContext(), "get "+strToUI, Toast.LENGTH_LONG).show();
                // ConsumerActivity.addMessage(strToUI);
             }
         });
