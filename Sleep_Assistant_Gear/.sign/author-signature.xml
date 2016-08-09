@@ -4,11 +4,15 @@
 <SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"></SignatureMethod>
 <Reference URI="bin%2Fsleep_assistant_gear">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
-<DigestValue>5D5WNtWASGF9cWia55h8yJFpMjN3Kjj5LDKYFkJuIcE=</DigestValue>
+<DigestValue>lmzhbFOM879zqaHVQY1kIZBfwbfiA0gJ9uzuKPq9MU4=</DigestValue>
 </Reference>
 <Reference URI="res%2Ficon.png">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
 <DigestValue>G6QJgWwRnWDtXbZyfPwkMxbusFGq510Z4LPaTv6dx/k=</DigestValue>
+</Reference>
+<Reference URI="res%2Fxml%2Faccessoryservices.xml">
+<DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
+<DigestValue>5y7dYsyIsbLNS3+MNfy1izjpSQxx6qDPF9fCd12rrQ0=</DigestValue>
 </Reference>
 <Reference URI="shared%2Fres%2Ficon.png">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
@@ -20,7 +24,7 @@
 </Reference>
 <Reference URI="tizen-manifest.xml">
 <DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></DigestMethod>
-<DigestValue>gkqMG4m6QcwgjrjPIcXr2fTTRy2Meh7m/lsttk0to38=</DigestValue>
+<DigestValue>6U39WvD7WFJSFvqnv2WEFHIzTGsKVJMKcy+achP+HlM=</DigestValue>
 </Reference>
 <Reference URI="#prop">
 <Transforms>
@@ -31,11 +35,11 @@
 </Reference>
 </SignedInfo>
 <SignatureValue>
-l69Bf0qOL/ZtxVDJ1BACbn/K175brHDNs5vlw8bgLXSeyvyFsCN7Mqcdi8VOvgYIGh8THOr6/XMS
-eZTEknN5OxXuuIxCEeMLnG3hcJya3I6nFFHSMZjV2VSgKue5L9stkZvR5tHDc3G37hJvBfUcBVqB
-3y5nocovQO8glxELfBLix6a7QSFPwZiZiJHdWEEfyqXF9d4vl3w4/ZI0AOfawoyG6QrmQOCjqngc
-PTQ0MEKHCdMd/t647JvO3dQ1HCPT+YH1dam5ycaRF6GnOjUz8wzgiI3ASl7u5FIKQ4fVy8JrNE5h
-+szx/Zmftxm3hOsVSUBxIJZxC1YMRemU+PLzmg==
+Awrr9J5pcuXsXHCCh4ULsdo5zbGBNY1vennUU+fKbVnkWMEvZUA6Ugf3wABgT4m2HI7bq/ZeDmYg
+SnAOXbRleBRbyMkf2d8SwTVIz0VLVsFZg6TZOql+kJpFcAJeBlSAmkkStCRFT/M9LZLFLRHktFXM
+T/2oFDlVRGFKcAcpVY6qRNQiFF2ki8DfMe2O1C9uOeodSGnw2Wx7N/wFE4HvU1rhAo2td6hbSAHs
++yaNVLuYXr3KYUoEbN818ikEFfdmEHDMKWifd6wwCoarxVzTXAj96xZdmc5/7Rj3wJA9xI4YHG2L
+bFjckAt8bgtwtZAr3zCWkinIBGF89qxqe2J5LQ==
 </SignatureValue>
 <KeyInfo>
 <X509Data>
