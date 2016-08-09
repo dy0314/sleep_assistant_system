@@ -50,6 +50,7 @@ static sensorinfo accerlerate_info;
 
 void _HRM_value(sensor_h sensor, sensor_event_s *sensor_data, void *user_data);
 void start_heartrate_sensor(appdata_s *ad);
+void stop_heartrate_sensor(appdata_s *ad);
 
 void _accerleration_value(sensor_h sensor, sensor_event_s *sensor_data, void *user_data);
 void start_acceleration_sensor(appdata_s *ad);

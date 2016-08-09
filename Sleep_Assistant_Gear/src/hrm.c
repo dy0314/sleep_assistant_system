@@ -50,4 +50,8 @@ start_heartrate_sensor(appdata_s *ad)
 	sensor_listener_start(HRM_info.sensor_listener);
 }
 
-
+void
+stop_heartrate_sensor(appdata_s *ad)
+{
+	sensor_listener_stop(HRM_info.sensor_listener);
+}

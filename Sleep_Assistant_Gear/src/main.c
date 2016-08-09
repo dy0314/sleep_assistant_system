@@ -263,12 +263,20 @@ static void
 app_pause(void *data)
 {
 	/* Take necessary actions when application becomes invisible. */
+	appdata_s *ad = data;
+
+	stop_heartrate_sensor(ad);
+	start_heartrate_sensor(ad);
 }
 
 static void
 app_resume(void *data)
 {
 	/* Take necessary actions when application becomes visible. */
+	appdata_s *ad = data;
+
+	stop_heartrate_sensor(ad);
+	start_heartrate_sensor(ad);
 }
 
 static void
