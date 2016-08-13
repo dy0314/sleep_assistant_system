@@ -3,8 +3,7 @@
 #modify
 author-signature.xml
 signature1.xml
-bin/sleep_assistant_gear
+bin/sleep_assistant_service
 res/xml/accessoryservices.xml
-shared/res/icon.png
-shared/res/sleep_assistant_gear.png
+shared/res/sleep_assistant_service.png
 tizen-manifest.xml

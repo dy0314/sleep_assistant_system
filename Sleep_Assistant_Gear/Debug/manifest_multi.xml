@@ -7,6 +7,12 @@
         <metadata key="accessory-services-location" value="/res/xml/accessoryservices.xml"/>
         <metadata key="launch-on-attach" value="false"/>
     </ui-application>
+    <service-application appid="org.tizen.sleep_assistant_service" exec="sleep_assistant_service" multiple="false" nodisplay="true" taskmanage="false" type="capp">
+        <label>Sleep Assistant Service</label>
+        <icon>sleep_assistant_service.png</icon>
+        <metadata key="accessory-services-location" value="/res/xml/accessoryservices.xml"/>
+        <metadata key="launch-on-attach" value="false"/>
+    </service-application>
     <privileges>
         <privilege>http://tizen.org/privilege/healthinfo</privilege>
         <privilege>http://tizen.org/privilege/window.priority.set</privilege>

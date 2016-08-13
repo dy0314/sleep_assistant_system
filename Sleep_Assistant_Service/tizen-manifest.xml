@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<manifest xmlns="http://tizen.org/ns/packages" api-version="2.3.1" package="org.tizen.sleep_assistant_gear" version="1.0.0">
+<manifest xmlns="http://tizen.org/ns/packages" api-version="2.3.1" package="org.tizen.sleep_assistant_service" version="1.0.0">
     <profile name="wearable"/>
-    <ui-application appid="org.tizen.sleep_assistant_gear" exec="sleep_assistant_gear" multiple="false" nodisplay="false" taskmanage="true" type="capp">
-        <label>Sleep Assistant</label>
-        <icon>icon.png</icon>
+    <service-application appid="org.tizen.sleep_assistant_service" exec="sleep_assistant_service" multiple="false" nodisplay="true" taskmanage="false" type="capp">
+        <label>Sleep Assistant Service</label>
+        <icon>sleep_assistant_service.png</icon>
         <metadata key="accessory-services-location" value="/res/xml/accessoryservices.xml"/>
         <metadata key="launch-on-attach" value="false"/>
-    </ui-application>
+    </service-application>
     <privileges>
         <privilege>http://tizen.org/privilege/healthinfo</privilege>
         <privilege>http://tizen.org/privilege/window.priority.set</privilege>
         <privilege>http://tizen.org/privilege/appmanager.launch</privilege>
         <privilege>http://tizen.org/privilege/bluetooth</privilege>
         <privilege>http://developer.samsung.com/tizen/privilege/accessoryprotocol</privilege>
-        <privilege>http://tizen.org/privilege/display</privilege>
     </privileges>
     <feature name="http://tizen.org/feature/sensor.heart_rate_monitor.led_ir">true</feature>
     <feature name="http://tizen.org/feature/sensor.accelerometer">true</feature>

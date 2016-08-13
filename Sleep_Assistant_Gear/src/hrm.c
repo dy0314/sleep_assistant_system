@@ -25,7 +25,25 @@ void _HRM_value(sensor_h sensor, sensor_event_s *sensor_data, void
 		ad->HRM75++;
 	ad->check++;
 	sprintf(buf4, "%f", ad->currentHRM);
-	send_data(buf4);
+	app_control_h app_control;
+	if (app_control_create(&app_control)== APP_CONTROL_ERROR_NONE)
+	{
+		if ((app_control_set_app_id(app_control, "org.tizen.sleep_assistant_service") == APP_CONTROL_ERROR_NONE)
+				&& (app_control_add_extra_data(app_control, "service_action", buf4) == APP_CONTROL_ERROR_NONE)
+				&& (app_control_send_launch_request(app_control, NULL, NULL) == APP_CONTROL_ERROR_NONE))
+		{
+			//LOGI("App launch request sent!");
+
+		}
+		else
+		{
+			//LOGE("App launch request sending failed!");
+		}
+		if (app_control_destroy(app_control) == APP_CONTROL_ERROR_NONE)
+		{
+			//LOGI("App control destroyed.");
+		}
+	}
 	//sprintf(buf2, "<align=center> <font_size=20> Under 60 count : %d </font> </align>", ad->HRM50);
 	sprintf(buf2, "<align=center> <font_size=20> Checker : %d </font> </align>", ad->check);
 	//sprintf(buf2, "<align=center> <font_size=20> Peek-to-Peek : %0.1f </font> </align>", sensor_data->values[2]);
@@ -53,5 +71,5 @@ start_heartrate_sensor(appdata_s *ad)
 void
 stop_heartrate_sensor(appdata_s *ad)
 {
-	sensor_listener_stop(HRM_info.sensor_listener);
+  sensor_listener_stop(HRM_info.sensor_listener);
 }

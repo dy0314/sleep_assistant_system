@@ -17,6 +17,7 @@
 #include <dlog.h>
 #include <sensor.h>
 #include <glib.h>
+#include <efl_util.h>
 
 typedef struct appdata {
 	Evas_Object *win;
@@ -54,6 +55,14 @@ void stop_heartrate_sensor(appdata_s *ad);
 
 void _accerleration_value(sensor_h sensor, sensor_event_s *sensor_data, void *user_data);
 void start_acceleration_sensor(appdata_s *ad);
+void stop_heartrate_sensor(appdata_s *ad);
+
+void service_on_cb(void *data, Evas_Object *obj, void *event_info);
+void service_off_cb(void *data, Evas_Object *obj, void *event_info);
+
+void launch_service();
+void start_service();
+void stop_service();
 
 void alarm_cb(void *data, Evas_Object * obj, void *event_info);
 void status_cb(void *data, Evas_Object * obj, void *event_info);

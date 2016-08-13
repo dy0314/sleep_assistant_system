@@ -99,6 +99,6 @@ void status_cb(void *data, Evas_Object *obj, void *event_info)
 	evas_object_move(ad->check75Label,10,290);
 	evas_object_resize(ad->check75Label,340,30);
 	evas_object_show(ad->check75Label);
-
+	efl_util_set_notification_window_level(popup, EFL_UTIL_NOTIFICATION_LEVEL_3);
 	evas_object_show(popup);
 }

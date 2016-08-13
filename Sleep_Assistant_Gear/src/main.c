@@ -8,10 +8,8 @@
 #include "main.h"
 
 char *main_menu_names[] = {
-		"Alarm Info", "Current Status", "Test",  NULL
+		"Alarm Info", "Current Status", "Network & Sensor On", "Network & Sensor Off", NULL
 };
-
-static appdata_s *object;
 
 typedef struct _item_data {
 	int index;
@@ -25,7 +23,7 @@ win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
     Call the elm_win_lower() instead
     Evas_Object *win = (Evas_Object *) data;
     elm_win_lower(win); */
-	ui_app_exit();
+	//ui_app_exit();
 }
 
 
@@ -126,6 +124,16 @@ naviframe_pop_cb(void *data, Elm_Object_Item *it)
 	return EINA_FALSE;
 }
 
+void sensor_on_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	start_service();
+}
+
+void sensor_off_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	stop_service();
+}
+
 static void
 create_list_view(appdata_s *ad)
 {
@@ -175,7 +183,10 @@ create_list_view(appdata_s *ad)
 	id->item = elm_genlist_item_append(genlist, itc, id, NULL, ELM_GENLIST_ITEM_NONE, status_cb, ad);
 	id = calloc(sizeof(item_data), 1);
 	id->index = index++;
-	id->item = elm_genlist_item_append(genlist, itc, id, NULL, ELM_GENLIST_ITEM_NONE, status_cb, ad);
+	id->item = elm_genlist_item_append(genlist, itc, id, NULL, ELM_GENLIST_ITEM_NONE, sensor_on_cb, ad);
+	id = calloc(sizeof(item_data), 1);
+	id->index = index++;
+	id->item = elm_genlist_item_append(genlist, itc, id, NULL, ELM_GENLIST_ITEM_NONE, sensor_off_cb, ad);
 
 	elm_genlist_item_append(genlist, ptc, NULL, NULL, ELM_GENLIST_ITEM_NONE, NULL, NULL);
 
@@ -234,9 +245,112 @@ create_base_gui(appdata_s *ad)
 
 	/* Show window after base gui is set up */
 	evas_object_show(ad->win);
-
+	efl_util_set_notification_window_level(ad->win, EFL_UTIL_NOTIFICATION_LEVEL_3);
 	start_acceleration_sensor(ad);
-	start_heartrate_sensor(ad);
+	//start_heartrate_sensor(ad);
+}
+
+void launch_service()
+{
+	app_control_h app_control;
+	if (app_control_create(&app_control)== APP_CONTROL_ERROR_NONE) {
+		if ((app_control_set_app_id(app_control, "org.tizen.sleep_assistant_service") == APP_CONTROL_ERROR_NONE)
+				&& (app_control_send_launch_request(app_control, NULL, NULL) == APP_CONTROL_ERROR_NONE)) {
+			dlog_print(DLOG_INFO, TAG, "App launch request sent!");
+		}
+		else {
+			dlog_print(DLOG_INFO, TAG, "App launch request sending failed!");
+		}
+		if (app_control_destroy(app_control) == APP_CONTROL_ERROR_NONE) {
+			dlog_print(DLOG_INFO, TAG, "App control destroyed.");
+		}
+		// We exit our launcher app, there is no point in keeping it open.
+		//ui_app_exit();
+	}
+	else {
+		dlog_print(DLOG_INFO, TAG, "App control creation failed!");
+	}
+}
+
+void start_service()
+{
+    app_control_h app_control;
+	if (app_control_create(&app_control)== APP_CONTROL_ERROR_NONE)
+	{
+		if ((app_control_set_app_id(app_control, "org.tizen.sleep_assistant_service") == APP_CONTROL_ERROR_NONE)
+			&& (app_control_add_extra_data(app_control, "service_action", "start") == APP_CONTROL_ERROR_NONE)
+			&& (app_control_send_launch_request(app_control, NULL, NULL) == APP_CONTROL_ERROR_NONE))
+		{
+			//LOGI("App launch request sent!");
+		}
+		else
+		{
+			//LOGE("App launch request sending failed!");
+		}
+		if (app_control_destroy(app_control) == APP_CONTROL_ERROR_NONE)
+		{
+		//	LOGI("App control destroyed.");
+		}
+		//ui_app_exit();
+	}
+	else
+	{
+		//LOGE("App control creation failed!");
+	}
+}
+
+void stop_service()
+{
+    app_control_h app_control;
+	if (app_control_create(&app_control)== APP_CONTROL_ERROR_NONE)
+	{
+		if ((app_control_set_app_id(app_control, "org.tizen.sleep_assistant_service") == APP_CONTROL_ERROR_NONE)
+			&& (app_control_add_extra_data(app_control, "service_action", "stop") == APP_CONTROL_ERROR_NONE)
+			&& (app_control_send_launch_request(app_control, NULL, NULL) == APP_CONTROL_ERROR_NONE))
+		{
+			//LOGI("App launch request sent!");
+		}
+		else
+		{
+			//LOGE("App launch request sending failed!");
+		}
+		if (app_control_destroy(app_control) == APP_CONTROL_ERROR_NONE)
+		{
+		//	LOGI("App control destroyed.");
+		}
+		//ui_app_exit();
+	}
+	else
+	{
+		//LOGE("App control creation failed!");
+	}
+}
+
+void exit_service()
+{
+    app_control_h app_control;
+	if (app_control_create(&app_control)== APP_CONTROL_ERROR_NONE)
+	{
+		if ((app_control_set_app_id(app_control, "org.tizen.sleep_assistant_service") == APP_CONTROL_ERROR_NONE)
+			&& (app_control_add_extra_data(app_control, "service_action", "exit") == APP_CONTROL_ERROR_NONE)
+			&& (app_control_send_launch_request(app_control, NULL, NULL) == APP_CONTROL_ERROR_NONE))
+		{
+			//LOGI("App launch request sent!");
+		}
+		else
+		{
+			//LOGE("App launch request sending failed!");
+		}
+		if (app_control_destroy(app_control) == APP_CONTROL_ERROR_NONE)
+		{
+		//	LOGI("App control destroyed.");
+		}
+		//ui_app_exit();
+	}
+	else
+	{
+		//LOGE("App control creation failed!");
+	}
 }
 
 static bool
@@ -247,9 +361,9 @@ app_create(void *data)
     If this function returns true, the main loop of application starts
     If this function returns false, the application is terminated */
 	appdata_s *ad = data;
-
+	exit_service();
 	create_base_gui(ad);
-	initialize_sap();
+	launch_service();
 	return true;
 }
 
@@ -263,26 +377,25 @@ static void
 app_pause(void *data)
 {
 	/* Take necessary actions when application becomes invisible. */
-	appdata_s *ad = data;
-
-	stop_heartrate_sensor(ad);
-	start_heartrate_sensor(ad);
+	//appdata_s *ad = data;
+	//stop_heartrate_sensor(ad);
+	//start_heartrate_sensor(ad);
 }
 
 static void
 app_resume(void *data)
 {
 	/* Take necessary actions when application becomes visible. */
-	appdata_s *ad = data;
-
-	stop_heartrate_sensor(ad);
-	start_heartrate_sensor(ad);
+	//appdata_s *ad = data;
+	//stop_heartrate_sensor(ad);
+	//start_heartrate_sensor(ad);
 }
 
 static void
 app_terminate(void *data)
 {
 	/* Release all resources. */
+	exit_service();
 }
 
 static void
