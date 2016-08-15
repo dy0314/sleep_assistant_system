@@ -26,6 +26,7 @@ import cz.msebera.android.httpclient.protocol.HTTP;
  */
 
 public class LoginActivity extends Activity {
+    private final String TAG="LoginActivity";
     private EditText idInput, passwordInput;
     private CheckBox autoLogin;
     private Button loginButton;
@@ -40,7 +41,6 @@ public class LoginActivity extends Activity {
         idInput=(EditText)findViewById(R.id.idinput);
         passwordInput=(EditText)findViewById(R.id.passwordInput);
         loginButton=(Button)findViewById(R.id.loginButton);
-
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -69,16 +69,15 @@ public class LoginActivity extends Activity {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 String ackData=null;
-                Log.e("FROM_SERVER","success");
+                Log.i(TAG,"success");
                 try {
                     ackData=new String(responseBody,"UTF-8");
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                Log.e("FROM_SERVER",ackData);
+                Log.i(TAG,"akcData"+ackData);
 
                 if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//Login Success
-                    Log.e("FROM_SERVER","true");
                     Intent intent = new Intent(LoginActivity.this, AlarmSettingActivity.class);
                     intent.putExtra("ID",id);
                     startActivity(intent);
@@ -87,7 +86,7 @@ public class LoginActivity extends Activity {
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.e("FROM_SERVER","fail");
+                Log.e(TAG,"onFailure");
                 Toast.makeText(getApplicationContext(),"Login Failed",Toast.LENGTH_SHORT).show();
             }
         });

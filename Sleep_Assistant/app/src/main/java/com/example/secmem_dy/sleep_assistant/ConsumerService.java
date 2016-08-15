@@ -23,11 +23,17 @@
 
 package com.example.secmem_dy.sleep_assistant;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -50,7 +56,7 @@ import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.entity.StringEntity;
 
 public class ConsumerService extends SAAgent {
-    private static final String TAG = "HelloAccessory(C)";
+    private static final String TAG = "ConsumerService";
     private static final int HELLOACCESSORY_CHANNEL_ID = 104;
     private static final Class<ServiceConnection> SASOCKET_CLASS = ServiceConnection.class;
     private final IBinder mBinder = new LocalBinder();
@@ -94,6 +100,7 @@ public class ConsumerService extends SAAgent {
     @Override
     public IBinder onBind(Intent intent) {
         id=intent.getStringExtra("ID");//get ID;
+        Log.i(TAG,"get ID is" + id);
         return mBinder;
     }
 
@@ -104,10 +111,8 @@ public class ConsumerService extends SAAgent {
                 requestServiceConnection(peerAgent);
         } else if (result == SAAgent.FINDPEER_DEVICE_NOT_CONNECTED) {
             Toast.makeText(getApplicationContext(), "FINDPEER_DEVICE_NOT_CONNECTED", Toast.LENGTH_LONG).show();
-            updateTextView("Disconnected");
         } else if (result == SAAgent.FINDPEER_SERVICE_NOT_FOUND) {
             Toast.makeText(getApplicationContext(), "FINDPEER_SERVICE_NOT_FOUND", Toast.LENGTH_LONG).show();
-            updateTextView("Disconnected");
         } else {
             Toast.makeText(getApplicationContext(), R.string.NoPeersFound, Toast.LENGTH_LONG).show();
         }
@@ -124,9 +129,7 @@ public class ConsumerService extends SAAgent {
     protected void onServiceConnectionResponse(SAPeerAgent peerAgent, SASocket socket, int result) {
         if (result == SAAgent.CONNECTION_SUCCESS) {
             this.mConnectionHandler = (ServiceConnection) socket;
-            updateTextView("Connected");
         } else if (result == SAAgent.CONNECTION_ALREADY_EXIST) {
-            updateTextView("Connected");
             Toast.makeText(getBaseContext(), "CONNECTION_ALREADY_EXIST", Toast.LENGTH_LONG).show();
         } else if (result == SAAgent.CONNECTION_DUPLICATE_REQUEST) {
             Toast.makeText(getBaseContext(), "CONNECTION_DUPLICATE_REQUEST", Toast.LENGTH_LONG).show();
@@ -167,20 +170,19 @@ public class ConsumerService extends SAAgent {
         }
 
         @Override
-        public void onReceive(int channelId, byte[] data) {
+        public void onReceive(int channelId, byte[] data) {//기어로 부터 데이터를 받은 후 액션
             final String message = new String(data);
-            //addMessage("Received: ", message);
+            String sleepStateURl;
             Toast.makeText(getApplicationContext(), "get "+message, Toast.LENGTH_SHORT).show();
             String currntData=new String(data);
-            Log.e("SEND_SERVER",currntData);
+            Log.i(TAG,currntData);
 
             StringEntity entity=null;
             JSONObject jsonParams = new JSONObject();
             try {
                 GregorianCalendar currenttTimecalendar = new GregorianCalendar();
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-                jsonParams.put(HttpClient.JSON_ID,"test");
+                jsonParams.put(HttpClient.JSON_ID,id);
                 jsonParams.put(HttpClient.JSON_HEART_RATE,currntData);
                 jsonParams.put(HttpClient.JSON_CURRNT_TIME,sdf.format(currenttTimecalendar.getTime()));
             } catch (JSONException e) {
@@ -189,38 +191,51 @@ public class ConsumerService extends SAAgent {
             }
             entity=HttpClient.makeStringEntity(jsonParams);
 
-            client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(HttpClient.PUSH_SLEEP_URL),entity,"application/json",new AsyncHttpResponseHandler() {
+            if(SoundPlay.isWakeUpTime)
+                sleepStateURl=HttpClient.WAKEUP_SLEEP_URL;
+            else
+                sleepStateURl=HttpClient.PUSH_SLEEP_URL;//set URL
+
+            client.post(getApplicationContext(),HttpClient.getAbsoulteUrl(sleepStateURl),entity,"application/json",new AsyncHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                     String ackData=null;
-                    Log.e("FROM_SERVER","success_getAck");
                     try {
                         ackData=new String(responseBody,"UTF-8");
+                        Log.i(TAG,"success_getAck:"+ackData);
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
-                    if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {// Success
-                        Log.e("FROM_SERVER","state_success");
-                    }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL)){
-                        Log.e("FROM_SERVER","state_fail");
+                    if(ackData!=null){
+                        if(ackData.equals(HttpClient.ACK_SUCCESS)) {// Success
+                            Log.i(TAG,"state_success");
+                        }else if( ackData.equals(HttpClient.ACK_FAIL)){
+                            Log.i(TAG,"state_fail");
+                        }
+                        else if(ackData.equals(HttpClient.ACK_PLAY_WHITE_NOISE)){
+                            SoundPlay.startWhiteNoiseSound(getApplicationContext(), R.raw.whitenoise);
+                        }else if(ackData.equals(HttpClient.ACK_STOP_WHITE_NOISE)){
+                            SoundPlay.stopWhiteNoiseSound();
+                        }else if(ackData.equals(HttpClient.ACK_KEEP_ALARM)){
+                            //keep going alarm;
+                        }else if(ackData.equals(HttpClient.ACK_STOP_ALARM)){
+                            Intent receiverIntent=new Intent();
+                            receiverIntent.setAction("End_Alarm");
+                            sendBroadcast(receiverIntent);
+                            Log.i(TAG,"close Connection");
+                            closeConnection();
+                            SoundPlay.stopAlarmSound();
+                        }
                     }
-                    else if(ackData!=null && ackData.equals(HttpClient.ACK_PLAY_WHITE_NOISE)){
-                        //mplay.play();
-                    }else if(ackData!=null && ackData.equals(HttpClient.ACK_STOP_WHITE_NOISE)){
-                        //mplay.stop();
-                    }
-
                 }
                 @Override
                 public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                    Log.e("FROM_SERVER","data_send_fail");
+                    Log.i(TAG,"data_send_fail");
                 }
             } );
         }
-
         @Override
         protected void onServiceConnectionLost(int reason) {
-            updateTextView("Disconnected");
             closeConnection();
         }
     }
@@ -244,11 +259,9 @@ public class ConsumerService extends SAAgent {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            //addMessage("Sent: ", data);
         }
         return retvalue;
     }
-
     public boolean closeConnection() {
         if (mConnectionHandler != null) {
             mConnectionHandler.close();
@@ -289,7 +302,6 @@ public class ConsumerService extends SAAgent {
             }
         });
     }
-
     private void addMessage(final String prefix, final String data) {
         final String strToUI = prefix.concat(data);
         mHandler.post(new Runnable() {

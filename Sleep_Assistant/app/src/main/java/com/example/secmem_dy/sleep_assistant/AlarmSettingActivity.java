@@ -3,9 +3,11 @@ package com.example.secmem_dy.sleep_assistant;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -34,9 +36,10 @@ import cz.msebera.android.httpclient.entity.StringEntity;
  * Created by SECMEM-DY on 2016-07-07.
  */
 public class AlarmSettingActivity extends Activity implements DatePicker.OnDateChangedListener, TimePicker.OnTimeChangedListener {
+    private final String TAG="AlarmSettingActivity";
     // 알람 메니저
     private AlarmManager mManager;
-    private AlarmManager postManager;
+    private AlarmManager preManager;
     // 설정 일시
     private GregorianCalendar mCalendar;
     //일자 설정 클래스
@@ -54,37 +57,35 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
     private long startMiliTime;
     private long endMiliTime;
     private String id;
-
+    private BroadcastReceiver receiver;
 
     private ConsumerService mConsumerService = null;
     private boolean mIsBound = false;
+    private boolean mIsRegister=false;
     private final ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             mConsumerService = ((ConsumerService.LocalBinder) service).getService();
+            Log.i(TAG,"onServiceConnected");
             Toast.makeText(getApplicationContext(),"onServiceConnected",Toast.LENGTH_SHORT).show();
-            //updateTextView("onServiceConnected");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName className) {
             mConsumerService = null;
-            mIsBound = false;
+            Log.i(TAG,"onServiceDisconnected");
             Toast.makeText(getApplicationContext(),"onServiceDisconnected",Toast.LENGTH_SHORT).show();
-            //updateTextView("onServiceDisconnected");
         }
     };
-
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent =getIntent();
         id=intent.getStringExtra("ID");
-
         client =HttpClient.getinstance();
         //알람 매니저를 취득
         mManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        postManager=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        preManager=(AlarmManager)getSystemService(Context.ALARM_SERVICE);
         //현재 시각을 취득
         mCalendar = new GregorianCalendar();
 
@@ -121,60 +122,41 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
         mTime.setCurrentMinute(mCalendar.get(Calendar.MINUTE));
         mTime.setOnTimeChangedListener(this);
 
-        // Bind service 주로 서비스가 앱 내에서 백그라운드 작업을 담당하는 경우에 선호
-        intent=new Intent(getApplicationContext(),ConsumerService.class);
-        intent.putExtra("ID",id);
-        mIsBound = bindService(new Intent(AlarmSettingActivity.this, ConsumerService.class), mConnection, Context.BIND_AUTO_CREATE);
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {//cancel Alarm BR
+                Log.i(TAG,"receiver onReceive from service");
+                cancelAlarm();
+                SoundPlay.isWakeUpTime=false;
+            }
+        };
+
+        Intent serviceIntent=new Intent(getApplicationContext(),ConsumerService.class);
+        serviceIntent.putExtra("ID",id.toString());
+        mIsBound = bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
+        //start Bluetooth service
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("End_Alarm");
+        if(!mIsRegister) {
+            registerReceiver(receiver, filter);
+            mIsRegister=true;
+        }
     }
 
     @Override
     protected void onDestroy() {
-        // Clean up connections
-        if (mIsBound == true && mConsumerService != null) {
-            if (mConsumerService.closeConnection() == false) {
-
-            }
-        }
+        resetAll();
         // Un-bind service
         if (mIsBound) {
             unbindService(mConnection);
             mIsBound = false;
         }
+        if(mIsRegister) {
+            unregisterReceiver(receiver);
+            mIsRegister = false;
+        }
         super.onDestroy();
     }
-
-    public void mOnClick(View v) {
-        switch (v.getId()) {
-           /* case R.id.buttonConnect: {
-                if (mIsBound == true && mConsumerService != null) {
-                    Toast.makeText(getApplicationContext(), "connect request", Toast.LENGTH_LONG).show();
-                    mConsumerService.findPeers();
-                }
-                break;
-            }
-            case R.id.buttonDisconnect: {
-                if (mIsBound == true && mConsumerService != null) {
-                    if (mConsumerService.closeConnection() == false) {
-                       // updateTextView("Disconnected");
-                        Toast.makeText(getApplicationContext(), R.string.ConnectionAlreadyDisconnected, Toast.LENGTH_LONG).show();
-                       // mMessageAdapter.clear();
-                    }
-                }
-                break;
-            }*/
-            case R.id.buttonSend: {
-                if (mIsBound == true && mConsumerService != null) {
-                    if (mConsumerService.sendData("Hello Accessory!")) {
-                    } else {
-                        Toast.makeText(getApplicationContext(), R.string.ConnectionAlreadyDisconnected, Toast.LENGTH_LONG).show();
-                    }
-                }
-                break;
-            }
-            default:
-        }
-    }
-
     public void setAllButton(boolean state){
         startButton.setEnabled(!state);
         cancelButton.setEnabled(state);
@@ -192,8 +174,8 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             Toast.makeText(getApplicationContext(),"알람을 설정할 수 없습니다.",Toast.LENGTH_SHORT).show();
             return;
         }
-        Log.i("TimeSet", startMiliTime+"= start time"+sdf.format(startTimecalendar.getTime()));//time start(currnt) setted
-        Log.i("TimeSet", endMiliTime+"= end time"+sdf.format(mCalendar.getTime()));//time end setted
+        Log.i(TAG, startMiliTime+"= start time"+sdf.format(startTimecalendar.getTime()));//time start(currnt) setted
+        Log.i(TAG, endMiliTime+"= end time"+sdf.format(mCalendar.getTime()));//time end setted
 
         StringEntity entity=null;
         JSONObject jsonParams = new JSONObject();
@@ -201,7 +183,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             jsonParams.put(HttpClient.JSON_START_TIME,sdf.format(startTimecalendar.getTime()));//set "yyyy-MM-dd HH:mm:ss" format
             jsonParams.put(HttpClient.JSON_END_TIME,sdf.format(mCalendar.getTime()));
             jsonParams.put(HttpClient.JSON_ID,id);//수정해야함 진짜 id로
-            Log.e("FROM_SERVER","send ID is" + id);
+            Log.i(TAG,"send ID is" + id);
         } catch (JSONException e) {
             e.printStackTrace();
             Log.e("Error","jsonParams");
@@ -218,46 +200,48 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
                     e.printStackTrace();
                 }
 
-                Log.e("FROM_SERVER","ackData:"+ackData);
+                Log.i(TAG,"ackData:"+ackData);
                 if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//Alarm Request Success
                     Intent intent = new Intent(AlarmSettingActivity.this, AlarmReceiver.class);
                     sender = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, 0);//request code를 다르게 설정해야 모든 알람이 정상적으로 울린다.
-                    preSender = PendingIntent.getBroadcast(getApplicationContext(), 1, intent, 0);
+                    preSender = PendingIntent.getBroadcast(getApplicationContext(), 1, intent, 0);//30분 미리알림
 
-                    mManager.set(AlarmManager.RTC_WAKEUP, endMiliTime, sender);
+                    //mManager.setRepeating(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),5000,sender);
+                    //mManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),1000,sender);
+                    mManager.set(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),sender);
                     if(endMiliTime>=startMiliTime+1000*60*30)
-                        postManager.set(AlarmManager.RTC_WAKEUP,endMiliTime-1000*60*30, preSender);//30분 전 울릴 알람을 등록
+                        preManager.setRepeating(AlarmManager.RTC_WAKEUP,endMiliTime-1000*60*30,1000*3,preSender);//30분 전 울릴 알람을 등록
                     else
                         Toast.makeText(getApplicationContext(),"can't set 30min post Alarm",Toast.LENGTH_SHORT).show();
 
-                    Log.e("FROM_SERVER","set_alarm_succes");
-
-                    setAllButton(true);
                     if (mIsBound == true && mConsumerService != null) {
                         Toast.makeText(getApplicationContext(), "connect request", Toast.LENGTH_LONG).show();
-                        mConsumerService.findPeers();
+                        mConsumerService.findPeers();//connect request
                     }
-
-                    //start Bluetooth service
+                    setAllButton(true);
                 }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
                     Toast.makeText(getApplicationContext(),"Time Set Failed",Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                Log.e("FROM_SERVER","set_alarm_fail");
+                Log.e(TAG,"set_alarm_fail");
             }
         } );
     }
-    //알람의 해제
-    private void cancelAlarm() {
+    private void resetAll(){
+        // Clean up connections
         if (mIsBound == true && mConsumerService != null) {
             if (mConsumerService.closeConnection() == false) {
-                // updateTextView("Disconnected");
                 Toast.makeText(getApplicationContext(), R.string.ConnectionAlreadyDisconnected, Toast.LENGTH_LONG).show();
-                // mMessageAdapter.clear();
             }
         }
-
+        /*if(sender!=null)
+         mManager.cancel(sender);
+        if(preSender!=null)
+            preManager.cancel(preSender);
+            */
+    }
+    private void cancelAlarm() {
         StringEntity entity=null;
         JSONObject jsonParams = new JSONObject();
         try {
@@ -278,12 +262,8 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
                     e.printStackTrace();
                 }
                 if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//cancel Success
-                    mManager.cancel(sender);
-                    mManager.cancel(preSender);
-                    Log.e("FROM_SERVER","success_cancel");
-                    Intent intent=new Intent(getApplicationContext(),SleepDataService.class);
-                    stopService(intent);
-
+                    Log.i(TAG,"success_cancel");
+                    resetAll();
                     setAllButton(false);
                 }else if(ackData!=null && ackData.equals(HttpClient.ACK_FAIL))
                     Toast.makeText(getApplicationContext(),"fail_cancel",Toast.LENGTH_SHORT).show();

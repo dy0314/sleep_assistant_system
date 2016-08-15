@@ -3,19 +3,16 @@ package com.example.secmem_dy.sleep_assistant;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
-import android.widget.Toast;
 
 /**
- * Created by SECMEM-DY on 2016-07-04.
+ * Created by SECMEM-DY on 2016-08-16.
  */
-
-public class AlarmReceiver extends BroadcastReceiver {
-    private static final String	TAG= "AlarmReceiver";
+public class PreAlarmReceiver extends BroadcastReceiver {
+    private static final String	TAG= "PreAlarmReceiver";
     private static SoundPlay mplay = null;
     @Override
     public void onReceive(Context context, Intent intent) {
-        SoundPlay.isWakeUpTime=true;
+        SoundPlay.isPreWakeUpTime=true;
         SoundPlay.startAlarmSound(context,R.raw.alarm);
     }
 }

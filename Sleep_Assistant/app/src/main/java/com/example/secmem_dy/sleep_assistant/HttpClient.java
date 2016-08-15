@@ -37,7 +37,9 @@ public class HttpClient {
 
     public static final String ACK_PLAY_WHITE_NOISE="3";
     public static final String ACK_STOP_WHITE_NOISE="4";
-    public static final String ACK_STOP_SERVICE="5";
+
+    public static final String ACK_KEEP_ALARM="5";
+    public static final String ACK_STOP_ALARM="6";
 
     private static AsyncHttpClient client = new AsyncHttpClient();
     public static AsyncHttpClient getinstance(){
