@@ -207,7 +207,7 @@ public class ConsumerService extends SAAgent {
                         e.printStackTrace();
                     }
                     if(ackData!=null){
-                        if(ackData.equals(HttpClient.ACK_SUCCESS)) {// Success
+                        if(ackData.equals(HttpClient.ACK_SUCCESS)) {// Success isPreWakeUpTime
                             Log.i(TAG,"state_success");
                         }else if( ackData.equals(HttpClient.ACK_FAIL)){
                             Log.i(TAG,"state_fail");
@@ -219,12 +219,12 @@ public class ConsumerService extends SAAgent {
                         }else if(ackData.equals(HttpClient.ACK_KEEP_ALARM)){
                             //keep going alarm;
                         }else if(ackData.equals(HttpClient.ACK_STOP_ALARM)){
+                            SoundPlay.stopAlarmSound();
                             Intent receiverIntent=new Intent();
                             receiverIntent.setAction("End_Alarm");
                             sendBroadcast(receiverIntent);
                             Log.i(TAG,"close Connection");
                             closeConnection();
-                            SoundPlay.stopAlarmSound();
                         }
                     }
                 }

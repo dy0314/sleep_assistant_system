@@ -12,9 +12,9 @@ import android.widget.Toast;
 
 public class AlarmReceiver extends BroadcastReceiver {
     private static final String	TAG= "AlarmReceiver";
-    private static SoundPlay mplay = null;
     @Override
     public void onReceive(Context context, Intent intent) {
+        Log.i(TAG,"onReceive AlarmReceiver");
         SoundPlay.isWakeUpTime=true;
         SoundPlay.startAlarmSound(context,R.raw.alarm);
     }

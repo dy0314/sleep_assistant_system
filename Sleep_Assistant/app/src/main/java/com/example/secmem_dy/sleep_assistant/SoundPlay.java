@@ -35,7 +35,7 @@ public class SoundPlay {
         if(whiteNoiseSound==null){
             whiteNoiseSound=MediaPlayer.create(context,id);
         }
-        alarmSound.seekTo(0);
+        whiteNoiseSound.seekTo(0);
         whiteNoiseSound.start();
     }
     public static void stopWhiteNoiseSound(){

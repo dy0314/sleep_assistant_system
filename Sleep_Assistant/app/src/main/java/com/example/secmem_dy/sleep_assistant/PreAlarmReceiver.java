@@ -9,7 +9,6 @@ import android.content.Intent;
  */
 public class PreAlarmReceiver extends BroadcastReceiver {
     private static final String	TAG= "PreAlarmReceiver";
-    private static SoundPlay mplay = null;
     @Override
     public void onReceive(Context context, Intent intent) {
         SoundPlay.isPreWakeUpTime=true;

@@ -127,7 +127,6 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             public void onReceive(Context context, Intent intent) {//cancel Alarm BR
                 Log.i(TAG,"receiver onReceive from service");
                 cancelAlarm();
-                SoundPlay.isWakeUpTime=false;
             }
         };
 
@@ -145,6 +144,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
 
     @Override
     protected void onDestroy() {
+        Log.i(TAG,"onDestroy");
         resetAll();
         // Un-bind service
         if (mIsBound) {
@@ -208,7 +208,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
 
                     //mManager.setRepeating(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),5000,sender);
                     //mManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),1000,sender);
-                    mManager.set(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),sender);
+                    mManager.setExact(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),sender);
                     if(endMiliTime>=startMiliTime+1000*60*30)
                         preManager.setRepeating(AlarmManager.RTC_WAKEUP,endMiliTime-1000*60*30,1000*3,preSender);//30분 전 울릴 알람을 등록
                     else
@@ -242,6 +242,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
             */
     }
     private void cancelAlarm() {
+        SoundPlay.isWakeUpTime=false;
         StringEntity entity=null;
         JSONObject jsonParams = new JSONObject();
         try {
