@@ -15,11 +15,15 @@ void update_ui(char *data)
 
 bool service_app_create(void *data)
 {
+	device_power_request_lock(POWER_LOCK_CPU, 0);
     // Todo: add your code here.
-	appdata_s* ad = (appdata_s *)data;;
+	appdata_s* ad = (appdata_s *)data;
+	//HRM_info = (appdata_s *) data;
+	//Accerlerate_info = (appdata_s *) data;
 	dlog_print(DLOG_INFO, TAG, "Shit 3");
 	initialize_sap();
-	stop_heartrate_sensor(ad);
+	//stop_heartrate_sensor(HRM_info);
+	//stop_acceleration_sensor(Accerlerate_info);
 	//service_app_exit();
     return true;
 }
@@ -28,8 +32,15 @@ void service_app_terminate(void *data)
 {
     // Todo: add your code here.
 	appdata_s *ad = (appdata_s *)data;
+	//HRM_info = (appdata_s *) data;
+	//Accerlerate_info = (appdata_s *) data;
 	stop_heartrate_sensor(ad);
+	//stop_acceleration_sensor(ad);
+	//stop_heartrate_sensor(HRM_info);
+	//stop_acceleration_sensor(Accerlerate_info);
+	device_power_release_lock(POWER_LOCK_CPU);
     return;
+
 }
 
 void service_app_control(app_control_h app_control, void *data)
@@ -38,6 +49,8 @@ void service_app_control(app_control_h app_control, void *data)
 
 	char *caller_id = NULL, *action_value = NULL;
 	appdata_s *ad = (appdata_s *) data;
+	//HRM_info = (appdata_s *) data;
+	//Accerlerate_info = (appdata_s *) data;
 	if ((app_control_get_caller(app_control, &caller_id) == APP_CONTROL_ERROR_NONE)
 			&& (app_control_get_extra_data(app_control, "service_action", &action_value) == APP_CONTROL_ERROR_NONE))
 	{
@@ -55,12 +68,19 @@ void service_app_control(app_control_h app_control, void *data)
 				&& (!strncmp(action_value,"start", STRNCMP_LIMIT)))
 		{
 			start_heartrate_sensor(ad);
+			//start_acceleration_sensor(ad);
+			//start_heartrate_sensor(HRM_info);
+			//start_acceleration_sensor(Accerlerate_info);
+
 		}
 		else if ((caller_id != NULL) && (action_value != NULL)
 				&& (!strncmp(caller_id, GEAR_APP_ID, STRNCMP_LIMIT))
 				&& (!strncmp(action_value,"stop", STRNCMP_LIMIT)))
 		{
 			stop_heartrate_sensor(ad);
+			//stop_acceleration_sensor(ad);
+			//stop_heartrate_sensor(HRM_info);
+			//stop_acceleration_sensor(Accerlerate_info);
 		}
 	}
 	return;

@@ -13,8 +13,11 @@
         <privilege>http://tizen.org/privilege/appmanager.launch</privilege>
         <privilege>http://tizen.org/privilege/bluetooth</privilege>
         <privilege>http://developer.samsung.com/tizen/privilege/accessoryprotocol</privilege>
+        <privilege>http://tizen.org/privilege/datasharing</privilege>
+        <privilege>http://tizen.org/privilege/display</privilege>
     </privileges>
     <feature name="http://tizen.org/feature/sensor.heart_rate_monitor.led_ir">true</feature>
+    <feature name="http://tizen.org/feature/network.bluetooth">true</feature>
     <feature name="http://tizen.org/feature/sensor.accelerometer">true</feature>
     <feature name="http://tizen.org/feature/sensor.heart_rate_monitor.led_red">true</feature>
     <feature name="http://tizen.org/feature/sensor.linear_acceleration">true</feature>

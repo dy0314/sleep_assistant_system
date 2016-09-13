@@ -18,20 +18,21 @@
 #include <dlog.h>
 #include <sensor.h>
 #include <glib.h>
+#include <device/power.h>
 
 typedef struct appdata
 {
 	sensor_h sensor; // Sensor handle
 	sensor_listener_h listener; // Sensor listener handle
+	double heart_rate;
+	//double value;
+	int count;
+	int real_count;
 } appdata_s;
 
-typedef struct _sensor_info
-{
-	sensor_h sensor; /**< Sensor handle */
-	sensor_listener_h sensor_listener;
-} sensorinfo;
-
-static sensorinfo HRM_info;
+static double value = 0;
+static appdata_s HRM_info;
+static appdata_s accerlerate_info;
 
 #define TAG "Sleep Assistant Service"
 #define GEAR_APP_ID "org.tizen.sleep_assistant_gear"
@@ -39,6 +40,9 @@ static sensorinfo HRM_info;
 
 void start_heartrate_sensor(appdata_s *ad);
 void stop_heartrate_sensor(appdata_s *ad);
+void start_acceleration_sensor(appdata_s *ad);
+void stop_acceleration_sensor(appdata_s *ad);
+
 void initialize_sap();
 void update_ui(char *data);
 gboolean send_data(char *message);

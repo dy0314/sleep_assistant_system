@@ -63,6 +63,7 @@ void service_off_cb(void *data, Evas_Object *obj, void *event_info);
 void launch_service();
 void start_service();
 void stop_service();
+void exit_service();
 
 void alarm_cb(void *data, Evas_Object * obj, void *event_info);
 void status_cb(void *data, Evas_Object * obj, void *event_info);
