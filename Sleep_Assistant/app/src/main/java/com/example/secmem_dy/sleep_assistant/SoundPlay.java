@@ -13,9 +13,10 @@ public class SoundPlay {
     public static boolean isWakeUpTime=false;
     public static boolean isPreWakeUpTime=false;
 
-    public static MediaPlayer alarmSound=null;
-    public static MediaPlayer whiteNoiseSound=null;
+    private static MediaPlayer alarmSound=null;
+    private static MediaPlayer whiteNoiseSound=null;
     MediaPlayer mp = null;
+
     public static void startAlarmSound( Context context, int id ){
         if(alarmSound==null){
             alarmSound=MediaPlayer.create(context,id);

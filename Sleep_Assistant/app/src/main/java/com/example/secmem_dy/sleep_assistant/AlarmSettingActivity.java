@@ -167,7 +167,6 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
     private void setAlarm() {
         GregorianCalendar startTimecalendar = new GregorianCalendar();
         SimpleDateFormat   sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
         startMiliTime=startTimecalendar.getTimeInMillis();
         endMiliTime=mCalendar.getTimeInMillis();
         if(startMiliTime>=endMiliTime){
@@ -202,15 +201,18 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
 
                 Log.i(TAG,"ackData:"+ackData);
                 if(ackData!=null && ackData.equals(HttpClient.ACK_SUCCESS)) {//Alarm Request Success
+                    SoundPlay.isWakeUpTime=false;
+                    SoundPlay.isPreWakeUpTime=false;
                     Intent intent = new Intent(AlarmSettingActivity.this, AlarmReceiver.class);
                     sender = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, 0);//request code를 다르게 설정해야 모든 알람이 정상적으로 울린다.
-                    preSender = PendingIntent.getBroadcast(getApplicationContext(), 1, intent, 0);//30분 미리알림
-
-                    //mManager.setRepeating(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),5000,sender);
-                    //mManager.setInexactRepeating(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),1000,sender);
                     mManager.setExact(AlarmManager.RTC_WAKEUP,mCalendar.getTimeInMillis(),sender);
-                    if(endMiliTime>=startMiliTime+1000*60*30)
+
+                    if(endMiliTime>=startMiliTime+1000*60*30){
+                        Toast.makeText(getApplicationContext(),"30분 미리 알람 설정",Toast.LENGTH_SHORT).show();
+                        Intent preIntent = new Intent(AlarmSettingActivity.this, PreAlarmReceiver.class);
+                        preSender = PendingIntent.getBroadcast(getApplicationContext(), 1, preIntent, 0);//30분 미리알림
                         preManager.setRepeating(AlarmManager.RTC_WAKEUP,endMiliTime-1000*60*30,1000*3,preSender);//30분 전 울릴 알람을 등록
+                    }
                     else
                         Toast.makeText(getApplicationContext(),"can't set 30min post Alarm",Toast.LENGTH_SHORT).show();
 
@@ -232,7 +234,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
         // Clean up connections
         if (mIsBound == true && mConsumerService != null) {
             if (mConsumerService.closeConnection() == false) {
-                Toast.makeText(getApplicationContext(), R.string.ConnectionAlreadyDisconnected, Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext()," Clean up connections", Toast.LENGTH_LONG).show();
             }
         }
         /*if(sender!=null)
@@ -243,6 +245,7 @@ public class AlarmSettingActivity extends Activity implements DatePicker.OnDateC
     }
     private void cancelAlarm() {
         SoundPlay.isWakeUpTime=false;
+        SoundPlay.isPreWakeUpTime=false;
         StringEntity entity=null;
         JSONObject jsonParams = new JSONObject();
         try {

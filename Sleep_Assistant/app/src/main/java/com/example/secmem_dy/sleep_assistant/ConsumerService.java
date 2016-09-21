@@ -22,18 +22,12 @@
  */
 
 package com.example.secmem_dy.sleep_assistant;
-
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
+import android.app.Notification;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -68,6 +62,7 @@ public class ConsumerService extends SAAgent {
     private static SoundPlay mplay ;
     private String id;
 
+    private int cnt;
     public ConsumerService() {
         super(TAG, SASOCKET_CLASS);
     }
@@ -99,8 +94,15 @@ public class ConsumerService extends SAAgent {
 
     @Override
     public IBinder onBind(Intent intent) {
+        Notification notification = new Notification.Builder(getApplicationContext())
+                .setContentTitle("수면모드")
+                .setContentText("수면모드를 실행 중 입니다.")
+                .build();
+
+        startForeground(1, notification);
         id=intent.getStringExtra("ID");//get ID;
         Log.i(TAG,"get ID is" + id);
+        cnt=0;
         return mBinder;
     }
 
@@ -191,8 +193,14 @@ public class ConsumerService extends SAAgent {
             }
             entity=HttpClient.makeStringEntity(jsonParams);
 
-            if(SoundPlay.isWakeUpTime)
-                sleepStateURl=HttpClient.WAKEUP_SLEEP_URL;
+            if(SoundPlay.isWakeUpTime) {
+                sleepStateURl = HttpClient.WAKEUP_SLEEP_URL;
+                if(cnt==0) {
+                    Log.i(TAG,"send wake_up msg to gear");
+                    if(sendData("1"))
+                        cnt++;
+                }
+            }
             else
                 sleepStateURl=HttpClient.PUSH_SLEEP_URL;//set URL
 
@@ -221,7 +229,7 @@ public class ConsumerService extends SAAgent {
                         }else if(ackData.equals(HttpClient.ACK_STOP_ALARM)){
                             SoundPlay.stopAlarmSound();
                             Intent receiverIntent=new Intent();
-                            receiverIntent.setAction("End_Alarm");
+                            receiverIntent.setAction("End_Alarm");//AlarmSettingActivity에 BR을 보냄
                             sendBroadcast(receiverIntent);
                             Log.i(TAG,"close Connection");
                             closeConnection();
@@ -266,6 +274,7 @@ public class ConsumerService extends SAAgent {
         if (mConnectionHandler != null) {
             mConnectionHandler.close();
             mConnectionHandler = null;
+            this.stopForeground(true);
             return true;
         } else {
             return false;
